@@ -1,0 +1,89 @@
+:root{
+  --red1:#C0262D;
+  --red2:#A42221;
+  --orange:#E96F16;
+  --yellow:#EEB200;
+  --pink:#FFD2D4;
+  --gray1:#333333;
+  --gray2:#575764;
+  --white1:#E5E5E6;
+  --white2:#F5F6F7;
+  --teal:#008D96;
+}
+.bgGray2{
+  background-color: var(--gray2) !important;
+}
+.nav-link span{
+  color: var(--white2);
+}
+.table-card{
+  background-color: var(--white1);
+  text-decoration: none;
+  box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.1);
+}
+.table-card:hover{
+  background-color: var(--gray2);
+  transition: 0.7s ease;
+}
+.table-card a{
+  text-decoration: none;
+  color: var(--gray1);
+}
+.table-card a:hover{
+  color: var(--white2);
+  /* transition: 0.5s ease; */
+}
+
+.menu-card{
+  background-color: var(--white2);
+  box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.1);
+  color: var(--gray1);
+  cursor: pointer;
+
+}
+.menu-card:hover{
+  background-color: var(--red2) ;
+  color: var(--white2) ;
+  transition: 0.7s ease;
+}
+.add-btn{
+  background-color: var(--red1) !important;
+  color: var(--white2) !important;
+  transition: 0.3s ease;
+}
+.add-btn:hover,.edit-btn:hover{
+  box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.1);
+}
+.edit-btn{
+  border: 3px solid var(--red2) !important;
+  color: var(--red2) !important;
+  background-color:none;
+}
+.selected{
+  border: 3px solid var(--red2);
+  color:var(--red2);
+}
+
+
+.list-card, .detail-box{
+  /* background-color: var(--white2); */
+  box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.1);
+}
+
+.unpaid-yellow {
+  background-color: var(--yellow);
+}
+.paid-gray {
+  background-color: var(--gray2);
+}
+.dropdown-item{
+  padding: 12px;
+}
+.fs-9{
+  font-size: 1rem;
+}
+.disabled-link {
+  pointer-events: none;
+  opacity: 0.5;
+  background-color: #f0f0f0;
+}
