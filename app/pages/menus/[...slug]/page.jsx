@@ -8,6 +8,7 @@ import MenuInnerDetails from '@/app/components/MenuInnerDetails';
 import {categories} from '@/app/js/category';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchOrders } from '@/app/slices/ordersSlice';
+import { fetchMenu } from '@/app/slices/menuSlice';
 
 const MenuDetails = () => {
   const { slug } = useParams();
@@ -32,18 +33,21 @@ const MenuDetails = () => {
   const [total, setTotal] = useState(0);
   const [orderStatus, setOrderStatus] = useState('');
 
+  useEffect(()=>{
+    dispatch(fetchMenu());
+  },[])
   
 
   useEffect(()=>{
     if(store.menu){
       setMenuCatlog(store.menu);
       let cat = store.menu;
-    const category = cat.find(cat => cat.categoryName === currentMenu);
-    if(category){
-      setFilteredMenu(category);
-      // console.log("this is ====>>>",category);
-      dispatch(fetchOrders({orderId}));
-    }
+      const category = cat.find(cat => cat.categoryName === currentMenu);
+      if(category){
+        setFilteredMenu(category);
+        // console.log("this is ====>>>",category);
+        dispatch(fetchOrders({orderId}));
+      }
     }
     
   },[store.menu,currentMenu])
@@ -59,7 +63,6 @@ const MenuDetails = () => {
   dispatch(fetchOrders(Oid)).then((response) => {
     // setIsLoading(true);
     if (response) {
-        console.log("orders searched",response.payload[0]);
         const fetchedOrder = response.payload[0];
         const tempOrders = fetchedOrder.orders.reduce((acc, item) => {
           acc[item.id] = item.quantity;
@@ -129,7 +132,6 @@ const updateOrderItems = (order) => {
 //     dispatch(addOrder({ tableId:tableid, order: orderItems,total }));
 //     // router.push('/menu');
 // };
-console.log("this is order",order);
 
   return (
     <Layout>

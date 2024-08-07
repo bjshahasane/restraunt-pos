@@ -19,7 +19,7 @@ const Tables = () => {
     if (store.orders) {
         setOrdersArr(store.orders);
     }
-}, [store])
+}, [store.orders])
 
   useEffect(()=>{
     dispatch(fetchMenu());
@@ -41,15 +41,15 @@ const Tables = () => {
               //   Table {item}
               // </div>
 
-              <div key={index} className="card col-sm-5 col-md-2 m-2 table-card border-0">
-                <Link href={`/pages/menus/${item}`} onClick={() => dispatch(selectTable(item))} className={isTableUnpaid(String(item)) ? 'disabled-link' : ''}>
+              <div key={index} className={`card col-sm-5 col-md-2 m-2 table-card border-0 ${isTableUnpaid(String(item)) ? 'disabled-link' : ''}`}>
+                <Link href={`/pages/menus/${item}`} onClick={() => dispatch(selectTable(item))}>
                   <div className="card-body">
                     <h5 className="card-title">Table {item}</h5>
                     {/* <h6 className="card-subtitle mb-2 text-muted">Card subtitle</h6>
                     <p className="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
                     <a href="#" className="card-link">Card link</a>
                     <a href="#" className="card-link">Another link</a> */}
-                    <p className="card-text"></p>
+                    <p className="card-text">{isTableUnpaid(String(item)) ? 'Occupied' : 'Vacant'}</p>
 
                   </div>
                 </Link>

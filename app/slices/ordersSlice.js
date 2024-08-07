@@ -11,7 +11,6 @@ export const fetchOrders = createAsyncThunk('orders/fetchOrders', async (payload
     if (orderId || tableId) {
         fetchUrl += `?${orderId ? `orderId=${orderId}` : ''}${orderId && tableId ? '&' : ''}${tableId ? `tableId=${tableId}` : ''}`;
     }
-    console.log("this is url", fetchUrl);
     try {
         const response = await fetch(fetchUrl, {
             method: 'GET',

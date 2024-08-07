@@ -12,7 +12,6 @@ const MenuInnerDetails = ({ option, handleQuantityChange, initialQuantity }) => 
         setQuantity(initialQuantity);
     }, [initialQuantity]);
 
-    console.log("this is option", option);
     const increment = () => {
         const newQuantity = quantity + 1;
         setQuantity(newQuantity);

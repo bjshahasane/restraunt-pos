@@ -94,7 +94,6 @@ const EditableTable = ({ data, menuId }) => {
 
   const handleDeleteClick = async (index) => {
     const optionId = editableData[index].id;
-    console.log("This is option id", optionId);
     try {
       const response = await fetch(`/api/menu?id=${menuId}`, {
         method: 'PUT',

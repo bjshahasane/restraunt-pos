@@ -15,7 +15,6 @@ const TableDetails = ({ tableid, orderItems, total, orderId, orderStatus }) => {
     useEffect(() => {
         if (orderStatus) {
             setOStatus(orderStatus)
-            console.log("this is orderStatus",orderStatus);
         }
     }, [orderStatus])
 
@@ -32,7 +31,6 @@ const TableDetails = ({ tableid, orderItems, total, orderId, orderStatus }) => {
                 date: new Date().toISOString(),
                 status: oStatus,
             }
-            console.log("This is order payload",payload);
             try {
                 const response = await fetch(`/api/orders`, {
                     method: 'POST',
@@ -104,7 +102,6 @@ const TableDetails = ({ tableid, orderItems, total, orderId, orderStatus }) => {
     };
 
 
-    console.log("this is staus", oStatus);
 
     // console.log("This is ordered items",orderItems);
     return (

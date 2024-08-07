@@ -8,10 +8,7 @@ export const fetchMenu = createAsyncThunk('menu/fetchMenu', async (payload) => {
     //  const { orderId, tableId } = payload || {};
 
     let fetchUrl = `/api/menu`;
-    // if (orderId || tableId) {
-    //     fetchUrl += `?${orderId ? `orderId=${orderId}` : ''}${orderId && tableId ? '&' : ''}${tableId ? `tableId=${tableId}` : ''}`;
-    // }
-    console.log("this is url", fetchUrl);
+    
     try {
         const response = await fetch(fetchUrl, {
             method: 'GET',
