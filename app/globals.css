@@ -149,3 +149,20 @@
   color: #ffffff;
   background-color: #495057;
 }
+
+.nav-tabs .nav-link{
+  border: none !important;
+}
+.nav-link{
+  color: var(--gray1);
+}
+.nav-link:hover{
+  color: var(--gray1);
+
+}
+.nav-tabs .nav-link.active{
+  border-bottom: 3px solid var(--red2) !important;
+  background-color: inherit !important;
+
+}
+

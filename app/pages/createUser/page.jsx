@@ -9,9 +9,10 @@ const Member = async () => {
     // const session = await getServerSession(options);
     return (
         <div className="m-3">
-            <h1 className="text-center">Create user</h1>
+            <h1 className="text-center">Create user/Sign Up</h1>
             {/* <p>{session?.user?.name}</p>
             <p>{session?.user?.role}</p> */}
+            
             <UserForm />
         </div>
     )

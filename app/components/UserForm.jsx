@@ -1,84 +1,140 @@
 "use client"
 
 import { useRouter } from "next/navigation";
-import { useState } from "react";
-
+import { useState,useEffect } from "react";
+import { Card, CardHeader,CardBody, Tab, Tabs } from "react-bootstrap";
 
 const UserForm = () => {
     const router = useRouter();
-    const [formData, setFormData] = useState({ name: "", email: "", password: "" });
-    const [errorMessage, setErrorMessage] = useState("");
+    const [activeTab, setActiveTab] = useState('login');
+    const [formData, setFormData] = useState({ name: "", email: "", password: "", role: "" });
+    const [message, setMessage] = useState("");
+
+    useEffect(() => {
+        const storedUser = localStorage.getItem('user');
+        if (storedUser) {
+            // If user exists in local storage, redirect to home
+            router.push("/");
+        }
+    }, [router]);
 
     const handleChange = (e) => {
         const { name, value } = e.target;
-        const temp = {...formData};
+        const temp = { ...formData };
         temp[name] = value;
         setFormData(temp);
-      
+
     }
 
     const handleSubmit = async (e) => {
         e.preventDefault();
 
-        const res = await fetch("/api/users", {
-            method: "POST",
-            body: JSON.stringify({formData}),
-            "content-type": "application/json"
-        });
+        const url = activeTab === 'signup' ? '/api/signup' : '/api/login';
+        const body = activeTab === 'signup'
+            ? { formData }
+            : { email: formData.email, password: formData.password };
 
-        if (!res.ok) {
-            const response = await res.json();
-            setErrorMessage(response.message)
-        } else {
-            router.refresh();
-            router.push("/");
+        try {
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(body),
+            });
+
+            const result = await response.json();
+            setMessage(result.message);
+
+            if (response.status === 200 || response.status === 201) {
+                setFormData({ name: '', email: '', password: '', role: '' });
+                if (activeTab === 'login') {
+                    localStorage.setItem('user', JSON.stringify(result.user));
+                    router.push("/"); // Redirect on successful login
+                }
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            setMessage('An error occurred. Please try again later.');
         }
-    }
-
+    };
     return (
         <>
-            {/* <form onSubmit={handleSubmit} method="post" className="flex flex-col gap-3 w-1/2">
-                <h1>Create New User</h1>
-                <label>Full Name</label>
-                <input type="text" id="name" name="name" onChange={handleChange} value={formData.name}
-                    className="m2 bg-slate-400 rounded"
-                    required />
-
-                <label>Email</label>
-                <input type="email" id="email" name="email" onChange={handleChange} value={formData.email}
-                    className="m2 bg-slate-400 rounded"
-                    required />
-
-                <label>Password</label>
-                <input type="password" id="password" name="password" onChange={handleChange} value={formData.password}
-                    className="m2 bg-slate-400 rounded"
-                    required />
-
-                <input type="submit" value="Create User" className="bg-blue-300 hover:bg-blue-100" />
-            </form> */}
-            <div className="d-flex justify-content-center align-items-center border-0 p-4 rounded detail-box row col-md-4 m-auto mt-5">
-                <form onSubmit={handleSubmit} method="post">
-                    <div className="form-group m-3" >
-                        <label htmlFor="name">Full Name</label>
-                        <input type="text" className="form-control" id="name" name="name" onChange={handleChange} value={formData.name} placeholder="Enter username" />
-                    </div>
-                    <div className="form-group m-3" onSubmit={handleSubmit} method="post">
-                        <label htmlFor="email">Email address</label>
-                        <input type="email" className="form-control" id="email" name="email" onChange={handleChange} value={formData.email} placeholder="Enter email" />
-                        <small id="emailHelp" className="form-text text-muted">We'll never share your email with anyone else.</small>
-                    </div>
-                    <div className="form-group m-3">
-                        <label htmlFor="password">Password</label>
-                        <input type="password" className="form-control" id="password" name="password" onChange={handleChange} value={formData.password} placeholder="Password" />
-                    </div>
-
-                    <button type="submit" className="btn add-btn m-3">Submit</button>
-                </form>
+            <div className="container mt-5">
+                <Card style={{ maxWidth: '500px', margin: '0 auto' }}>
+                    <CardHeader>
+                        <Tabs
+                            activeKey={activeTab}
+                            onSelect={(tab) => setActiveTab(tab)}
+                            className="mb-3"
+                        >
+                            <Tab eventKey="login" title="Login" />
+                            <Tab eventKey="signup" title="Signup" />
+                        </Tabs>
+                    </CardHeader>
+                    <CardBody>
+                        <form onSubmit={handleSubmit}>
+                            {activeTab === 'signup' && (
+                                <>
+                                    <div className="form-group">
+                                        <label htmlFor="name">Full Name</label>
+                                        <input
+                                            type="text"
+                                            className="form-control"
+                                            id="name"
+                                            name="name"
+                                            value={formData.name}
+                                            onChange={handleChange}
+                                            required
+                                        />
+                                    </div>
+                                    <div className="form-group">
+                                        <label htmlFor="role">Role</label>
+                                        <input
+                                            type="text"
+                                            className="form-control"
+                                            id="role"
+                                            name="role"
+                                            value={formData.role}
+                                            onChange={handleChange}
+                                            placeholder="Enter role"
+                                        />
+                                    </div>
+                                </>
+                            )}
+                            <div className="form-group">
+                                <label htmlFor="email">Email</label>
+                                <input
+                                    type="email"
+                                    className="form-control"
+                                    id="email"
+                                    name="email"
+                                    value={formData.email}
+                                    onChange={handleChange}
+                                    required
+                                />
+                            </div>
+                            <div className="form-group">
+                                <label htmlFor="password">Password</label>
+                                <input
+                                    type="password"
+                                    className="form-control"
+                                    id="password"
+                                    name="password"
+                                    value={formData.password}
+                                    onChange={handleChange}
+                                    required
+                                />
+                            </div>
+                            <button type="submit" className="btn add-btn mt-3">
+                                {activeTab === 'signup' ? 'Signup' : 'Login'}
+                            </button>
+                        </form>
+                        {message && <div className="alert alert-info mt-3">{message}</div>}
+                    </CardBody>
+                </Card>
             </div>
 
-
-
-            <p>{errorMessage}</p>
         </>
     )
 }

@@ -1,27 +1,23 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import Link from 'next/link';
 import 'bootstrap/dist/css/bootstrap.min.css'; // Ensure Bootstrap CSS is imported
-const SideBar = () => {
 
+const SideBar = () => {
     const [dropdownOpen, setDropdownOpen] = useState(false);
 
-    const toggleDropdown = () => {
-        setDropdownOpen(!dropdownOpen);
-    };
+    const toggleDropdown = useCallback(() => {
+        setDropdownOpen(prevState => !prevState);
+    }, []);
 
     return (
         <div className="col-auto px-sm-2 px-0 bgGray2">
             <div className="d-flex flex-column align-items-center align-items-sm-start px-3 pt-3 text-white min-vh-100">
-                {/* <Link href="/" className="d-flex align-items-center pb-3 mb-md-0 me-md-auto text-white text-decoration-none">
-          <span className="fs-5 d-none d-sm-inline">Menu</span>
-        </Link> */}
                 <div className="pb-3 mb-md-0 me-md-auto text-white text-decoration-none">
                     <span className="fs-5 d-none d-sm-inline">Hote Aryan</span>
                 </div>
                 <ul className="nav nav-pills flex-column mb-sm-auto mb-0 align-items-center align-items-sm-start" id="menu">
                     <li className="nav-item mb-2">
                         <Link href="/pages/tables" className="nav-link align-middle px-0">
-                            {/* <img src='../icons/homeIcon.svg' className={"icon-img"} /> */}
                             <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" fill="currentColor" className="bi bi-house" viewBox="0 0 16 16">
                                 <path d="M8.707 1.5a1 1 0 0 0-1.414 0L.646 8.146a.5.5 0 0 0 .708.708L2 8.207V13.5A1.5 1.5 0 0 0 3.5 15h9a1.5 1.5 0 0 0 1.5-1.5V8.207l.646.647a.5.5 0 0 0 .708-.708L13 5.793V2.5a.5.5 0 0 0-.5-.5h-1a.5.5 0 0 0-.5.5v1.293zM13 7.207V13.5a.5.5 0 0 1-.5.5h-9a.5.5 0 0 1-.5-.5V7.207l5-5z" />
                             </svg>
@@ -53,20 +49,17 @@ const SideBar = () => {
                         </svg>
                         <span className="ms-1 d-none d-sm-inline">UserName</span>
                     </a>
-                    {
-                        dropdownOpen && (
-                            <ul className="dropdown-menu">
+                    {dropdownOpen && (
+                        <ul className="dropdown-menu">
                             <li><a className="dropdown-item" href="#">Profile</a></li>
                             <li><a className="dropdown-item" href="#">Settings</a></li>
                             <li><a className="dropdown-item" href="#">Logout</a></li>
                         </ul>
-                        )
-                    }
-                   
+                    )}
                 </div>
             </div>
         </div>
-    )
-}
+    );
+};
 
 export default SideBar;
