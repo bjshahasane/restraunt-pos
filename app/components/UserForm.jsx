@@ -1,8 +1,8 @@
-"use client"
+'use client'
 
 import { useRouter } from "next/navigation";
-import { useState,useEffect } from "react";
-import { Card, CardHeader,CardBody, Tab, Tabs } from "react-bootstrap";
+import { useState, useEffect } from "react";
+import { Card, CardHeader, CardBody, Tab, Tabs } from "react-bootstrap";
 
 const UserForm = () => {
     const router = useRouter();
@@ -11,20 +11,16 @@ const UserForm = () => {
     const [message, setMessage] = useState("");
 
     useEffect(() => {
-        const storedUser = localStorage.getItem('user');
-        if (storedUser) {
-            // If user exists in local storage, redirect to home
-            router.push("/");
+        const token = localStorage.getItem('token');
+        if (token) {
+            router.push("/"); // Redirect to home if user is already logged in
         }
     }, [router]);
 
     const handleChange = (e) => {
         const { name, value } = e.target;
-        const temp = { ...formData };
-        temp[name] = value;
-        setFormData(temp);
-
-    }
+        setFormData(prevState => ({ ...prevState, [name]: value }));
+    };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -46,10 +42,10 @@ const UserForm = () => {
             const result = await response.json();
             setMessage(result.message);
 
-            if (response.status === 200 || response.status === 201) {
+            if (response.ok) {
                 setFormData({ name: '', email: '', password: '', role: '' });
                 if (activeTab === 'login') {
-                    localStorage.setItem('user', JSON.stringify(result.user));
+                    localStorage.setItem('token', result.token); // Store JWT in localStorage
                     router.push("/"); // Redirect on successful login
                 }
             }
@@ -58,85 +54,84 @@ const UserForm = () => {
             setMessage('An error occurred. Please try again later.');
         }
     };
-    return (
-        <>
-            <div className="container mt-5">
-                <Card style={{ maxWidth: '500px', margin: '0 auto' }}>
-                    <CardHeader>
-                        <Tabs
-                            activeKey={activeTab}
-                            onSelect={(tab) => setActiveTab(tab)}
-                            className="mb-3"
-                        >
-                            <Tab eventKey="login" title="Login" />
-                            <Tab eventKey="signup" title="Signup" />
-                        </Tabs>
-                    </CardHeader>
-                    <CardBody>
-                        <form onSubmit={handleSubmit}>
-                            {activeTab === 'signup' && (
-                                <>
-                                    <div className="form-group">
-                                        <label htmlFor="name">Full Name</label>
-                                        <input
-                                            type="text"
-                                            className="form-control"
-                                            id="name"
-                                            name="name"
-                                            value={formData.name}
-                                            onChange={handleChange}
-                                            required
-                                        />
-                                    </div>
-                                    <div className="form-group">
-                                        <label htmlFor="role">Role</label>
-                                        <input
-                                            type="text"
-                                            className="form-control"
-                                            id="role"
-                                            name="role"
-                                            value={formData.role}
-                                            onChange={handleChange}
-                                            placeholder="Enter role"
-                                        />
-                                    </div>
-                                </>
-                            )}
-                            <div className="form-group">
-                                <label htmlFor="email">Email</label>
-                                <input
-                                    type="email"
-                                    className="form-control"
-                                    id="email"
-                                    name="email"
-                                    value={formData.email}
-                                    onChange={handleChange}
-                                    required
-                                />
-                            </div>
-                            <div className="form-group">
-                                <label htmlFor="password">Password</label>
-                                <input
-                                    type="password"
-                                    className="form-control"
-                                    id="password"
-                                    name="password"
-                                    value={formData.password}
-                                    onChange={handleChange}
-                                    required
-                                />
-                            </div>
-                            <button type="submit" className="btn add-btn mt-3">
-                                {activeTab === 'signup' ? 'Signup' : 'Login'}
-                            </button>
-                        </form>
-                        {message && <div className="alert alert-info mt-3">{message}</div>}
-                    </CardBody>
-                </Card>
-            </div>
 
-        </>
-    )
+
+    return (
+        <div className="container mt-5">
+            <Card style={{ maxWidth: '500px', margin: '0 auto' }}>
+                <CardHeader>
+                    <Tabs
+                        activeKey={activeTab}
+                        onSelect={(tab) => setActiveTab(tab)}
+                        className="mb-3"
+                    >
+                        <Tab eventKey="login" title="Login" />
+                        <Tab eventKey="signup" title="Signup" />
+                    </Tabs>
+                </CardHeader>
+                <CardBody>
+                    <form onSubmit={handleSubmit}>
+                        {activeTab === 'signup' && (
+                            <>
+                                <div className="form-group">
+                                    <label htmlFor="name">Full Name</label>
+                                    <input
+                                        type="text"
+                                        className="form-control"
+                                        id="name"
+                                        name="name"
+                                        value={formData.name}
+                                        onChange={handleChange}
+                                        required
+                                    />
+                                </div>
+                                <div className="form-group">
+                                    <label htmlFor="role">Role</label>
+                                    <input
+                                        type="text"
+                                        className="form-control"
+                                        id="role"
+                                        name="role"
+                                        value={formData.role}
+                                        onChange={handleChange}
+                                        placeholder="Enter role"
+                                    />
+                                </div>
+                            </>
+                        )}
+                        <div className="form-group">
+                            <label htmlFor="email">Email</label>
+                            <input
+                                type="email"
+                                className="form-control"
+                                id="email"
+                                name="email"
+                                value={formData.email}
+                                onChange={handleChange}
+                                required
+                            />
+                        </div>
+                        <div className="form-group">
+                            <label htmlFor="password">Password</label>
+                            <input
+                                type="password"
+                                className="form-control"
+                                id="password"
+                                name="password"
+                                value={formData.password}
+                                onChange={handleChange}
+                                required
+                            />
+                        </div>
+                        <button type="submit" className="btn add-btn mt-3">
+                            {activeTab === 'signup' ? 'Signup' : 'Login'}
+                        </button>
+                    </form>
+                    {message && <div className="alert alert-info mt-3">{message}</div>}
+                </CardBody>
+            </Card>
+        </div>
+    );
 }
 
 export default UserForm;

@@ -2,13 +2,22 @@ import Orders from "@/app/models/orders";
 import { NextResponse } from "next/server";
 // import bcrypt from "bcrypt";
 import connectMongoDB from "@/app/libs/mongodb";
+import { verifyToken } from "@/app/libs/Authorization";
 
 export async function POST(req) {
     try {
+
+        try {
+            const decodedToken = verifyToken(req); // If token is invalid, it will throw an error
+            console.log("Token verified. User ID:", decodedToken.userId);  // Example use of decoded token
+        } catch (error) {
+            return NextResponse.json({ message: 'Unauthorized', error: error.message }, { status: 401 });
+        }
         const body = await req.json();
         // const { orderId, tableId, orders, total, status, date } = body;
 
         await connectMongoDB();
+
 
 
         await Orders.create(body);
@@ -23,6 +32,14 @@ export async function POST(req) {
 
 export async function PUT(req) {
     try {
+
+        try {
+            const decodedToken = verifyToken(req); // If token is invalid, it will throw an error
+            console.log("Token verified. User ID:", decodedToken.userId);  // Example use of decoded token
+        } catch (error) {
+            return NextResponse.json({ message: 'Unauthorized', error: error.message }, { status: 401 });
+        }
+
         // Extract order ID from query parameters
         const { searchParams } = new URL(req.url);
         const orderId = searchParams.get('orderId');
@@ -40,7 +57,7 @@ export async function PUT(req) {
             if (body.date !== undefined) updateFields.date = body.date;
             if (body.status !== undefined) updateFields.status = body.status;
         }
-        
+
 
         // if (orderId || status) {
         //     if (body.date !== undefined) updateFields.date = body.date;
@@ -72,6 +89,15 @@ export async function PUT(req) {
 
 export async function DELETE(req) {
     try {
+
+        try {
+            const decodedToken = verifyToken(req); // If token is invalid, it will throw an error
+            console.log("Token verified. User ID:", decodedToken.userId);  // Example use of decoded token
+        } catch (error) {
+            return NextResponse.json({ message: 'Unauthorized', error: error.message }, { status: 401 });
+        }
+
+
         // Extract order ID from query parameters
         const { searchParams } = new URL(req.url);
         const orderId = searchParams.get('id');
@@ -96,6 +122,14 @@ export async function DELETE(req) {
 
 export async function GET(req) {
     try {
+
+        try {
+            const decodedToken = verifyToken(req); // If token is invalid, it will throw an error
+            console.log("Token verified. User ID:", decodedToken.userId);  // Example use of decoded token
+        } catch (error) {
+            return NextResponse.json({ message: 'Unauthorized', error: error.message }, { status: 401 });
+        }
+        
         await connectMongoDB();
 
         // Extract query parameters
@@ -110,7 +144,8 @@ export async function GET(req) {
         if (tableId) query.tableId = tableId;
 
         // Find orders based on the query parameters
-        const orders = await Orders.find(query);
+        // const orders = await Orders.find(query);
+        const orders = await Orders.find(query).sort({ createdAt: -1 });
 
         if (!orders.length) {
             return NextResponse.json({ message: 'No orders found' }, { status: 404 });

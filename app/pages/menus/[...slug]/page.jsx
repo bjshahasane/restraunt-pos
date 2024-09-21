@@ -1,10 +1,10 @@
 'use client';
 
-import { useParams } from 'next/navigation';
+import { useParams,useRouter } from 'next/navigation';
 import Layout from '@/app/components/Layout';
 import TableDetails from '@/app/components/TableDetails';
 import MenuInnerDetails from '@/app/components/MenuInnerDetails';
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useState, useMemo, use } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchOrders } from '@/app/slices/ordersSlice';
 import { fetchMenu } from '@/app/slices/menuSlice';
@@ -12,6 +12,7 @@ import { fetchMenu } from '@/app/slices/menuSlice';
 const MenuDetails = () => {
   const { slug } = useParams();
   const dispatch = useDispatch();
+  const router = useRouter();
   const { menu } = useSelector((state) => state.menuReducer);
 
   const [currentMenu, setCurrentMenu] = useState('VegStarters');
@@ -19,17 +20,31 @@ const MenuDetails = () => {
   const [orderItems, setOrderItems] = useState([]);
   const [total, setTotal] = useState(0);
   const [orderStatus, setOrderStatus] = useState('');
+  const [loginToken, setLoginToken] = useState();
+
+
 
   const tableId = slug?.[0];
   const orderId = slug?.[1];
 
+  console.log("This is tavle",tableId);
+
   // Fetch the menu and orders on component mount
   useEffect(() => {
+    const token = localStorage.getItem('token'); // Retrieve the JWT token from local storage
+
+    if (!token) {
+      // Redirect to login if no token is found
+      router.push('/pages/createUser');
+      return;
+    } else {
+      setLoginToken(token);
+    }
     dispatch(fetchMenu());
     if (orderId) {
       fetchOrderDetails(orderId);
     }
-  }, [orderId, dispatch]);
+  }, [orderId,dispatch,router]);
 
   // Update the filtered menu and fetch orders when the menu or currentMenu changes
   useEffect(() => {
@@ -40,7 +55,7 @@ const MenuDetails = () => {
         updateOrderItems(order);
       }
     }
-  }, [menu, currentMenu, order, orderId, dispatch]);
+  }, [menu, currentMenu, order, orderId, dispatch,updateOrderItems]);
 
   const fetchOrderDetails = async (Oid) => {
     try {
@@ -58,6 +73,8 @@ const MenuDetails = () => {
       console.error("Error occurred:", error.message);
     }
   };
+
+
 
   const handleMenu = (categoryName) => {
     setCurrentMenu(categoryName);
@@ -100,9 +117,8 @@ const MenuDetails = () => {
                   menu.map((item) => (
                     <div
                       key={item.id}
-                      className={`card col-md-2 m-2 menu-card ${
-                        currentMenu === item.categoryName ? 'selected' : 'border-0'
-                      }`}
+                      className={`card col-md-2 m-2 menu-card ${currentMenu === item.categoryName ? 'selected' : 'border-0'
+                        }`}
                       onClick={() => handleMenu(item.categoryName)}
                     >
                       <div className="card-body p-1">
@@ -126,7 +142,7 @@ const MenuDetails = () => {
               </div>
             </div>
           </div>
-          <TableDetails tableId={tableId} orderItems={orderItems} total={total} orderId={orderId} orderStatus={orderStatus} />
+          <TableDetails tableid={tableId} orderItems={orderItems} total={total} orderId={orderId} orderStatus={orderStatus} />
         </div>
       </div>
     </Layout>

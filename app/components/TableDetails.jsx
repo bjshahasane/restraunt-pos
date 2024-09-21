@@ -1,9 +1,12 @@
+'use client'
+
 import React, { useEffect, useState, useMemo } from 'react';
 import { formatCurrency, generateOrderId } from '../utils/generateOrderId';
 import { fetchOrders } from '../slices/ordersSlice';
 import Link from 'next/link';
 import { useDispatch } from 'react-redux';
-import { usePathname } from 'next/navigation';
+import { usePathname,useRouter } from 'next/navigation';
+import {toast } from 'react-toastify';
 
 const OrderTable = ({ orderItems }) => (
     <div className='mt-3' style={{ overflowY: 'scroll', maxHeight: '40vh', overflowX: 'hidden' }}>
@@ -41,14 +44,28 @@ const OrderStatusSelect = ({ status, setStatus }) => (
 );
 
 const TableDetails = ({ tableid, orderItems = [], total, orderId, orderStatus }) => {
+    const [loginToken,setLoginToken] = useState();
+    console.log("This is tableID",tableid);
     const dispatch = useDispatch();
     const pathname = usePathname();
+  const router = useRouter();
+
     const [oStatus, setOStatus] = useState('Unpaid');
 
     useEffect(() => {
-        if (orderStatus) setOStatus(orderStatus);
-    }, [orderStatus]);
+        const token = localStorage.getItem('token'); // Retrieve the JWT token from local storage
 
+        if (!token) {
+            // Redirect to login if no token is found
+            router.push('/pages/createUser');
+            return;
+        }else{
+            setLoginToken(token);
+        }
+        if (orderStatus) setOStatus(orderStatus);
+    }, [orderStatus,router]);
+
+  
     const addUpdateOrder = async () => {
         const payload = {
             orderId: orderId || generateOrderId(),
@@ -65,14 +82,27 @@ const TableDetails = ({ tableid, orderItems = [], total, orderId, orderStatus })
         try {
             const response = await fetch(url, {
                 method,
-                headers: { 'Content-Type': 'application/json' },
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${loginToken}`,
+                 },
                 body: JSON.stringify(payload),
             });
 
             const data = await response.json();
+            
+            if (response.status === 401 || response.status === 403) {
+                // Token is invalid or expired, redirect to login
+                router.push('/pages/createUser');
+                return;
+              }
+
             if (response.ok) {
+                toast.success(`${orderId ? 'Order updated' : 'Order added'} successfully`);
+               
                 console.log(`${orderId ? 'Order updated' : 'Order added'} successfully`);
                 if (orderId) dispatch(fetchOrders());
+                
             } else {
                 console.error('Error processing order:', data);
             }

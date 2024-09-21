@@ -6,7 +6,7 @@ import { generateOrderId } from '../utils/generateOrderId';
 
 export const fetchOrders = createAsyncThunk('orders/fetchOrders', async (payload) => {
      const { orderId, tableId } = payload || {};
-
+     const token = localStorage.getItem('token');
     let fetchUrl = `/api/orders`;
     if (orderId || tableId) {
         fetchUrl += `?${orderId ? `orderId=${orderId}` : ''}${orderId && tableId ? '&' : ''}${tableId ? `tableId=${tableId}` : ''}`;
@@ -15,13 +15,18 @@ export const fetchOrders = createAsyncThunk('orders/fetchOrders', async (payload
         const response = await fetch(fetchUrl, {
             method: 'GET',
             headers: {
-                'Content-Type': 'application/json'
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`,
             }
         });
 
         const data = await response.json();
         // console.log("This is data",data);
-
+        if (response.status === 401 || response.status === 403) {
+            // Token is invalid or expired
+            localStorage.removeItem('token'); // Optionally, clear the token
+            window.location.href = '/pages/createUser';  // Redirect to login
+          }
         if (response.status === 200) {
             // console.log('Orders retrieved successfully', data.orders);
             return data.orders;
@@ -35,38 +40,6 @@ export const fetchOrders = createAsyncThunk('orders/fetchOrders', async (payload
 
 });
 
-// export const updateOrder = createAsyncThunk('orders/updateOrder', async (payload) => {
-//     const { orderId, tableId } = payload || {};
-
-//    let fetchUrl = `/api/orders`;
-//    if (orderId || tableId) {
-//        fetchUrl += `?${orderId ? `orderId=${orderId}` : ''}${orderId && tableId ? '&' : ''}${tableId ? `tableId=${tableId}` : ''}`;
-//    }
-//    console.log("this is url", fetchUrl);
-//    try {
-//        const response = await fetch(fetchUrl, {
-//            method: 'GET',
-//            headers: {
-//                'Content-Type': 'application/json'
-//            }
-//        });
-
-//        const data = await response.json();
-//        // console.log("This is data",data);
-
-//        if (response.status === 200) {
-//            // console.log('Orders retrieved successfully', data.orders);
-//            return data.orders;
-//        } else {
-//            console.log('Error retrieving orders', data);
-//        }
-//    } catch (error) {
-//        console.error('Error:', error);
-//        return error;
-//    }
-
-// });
-
 
 const initialValue = {
     tableId: null,
@@ -77,18 +50,12 @@ export const orderSlice = createSlice({
     name: 'orders',
     initialState: initialValue,
     reducers: {
-        // handleSearchVal: (state, action) => {
-        //     state.searchVal = action.payload;
-        // }
+       
         selectTable:(state,action)=>{
             state.tableId = action.payload;
         },
         addOrder: (state, action) => {
             const { tableId, order,total } = action.payload;
-            // const tableOrders = state.orders.find(orders => orders.tableId === tableId);
-            // if (tableOrders) {
-            //     tableOrders.orders.push(order);
-            // } else {
                 const orderId = generateOrderId(); 
                 state.orders.push({ 
                     orderId,
@@ -103,29 +70,12 @@ export const orderSlice = createSlice({
         setOrders: (state, action) => {
             state.orders = action.payload;
         },
-        // updateOrder: (state, action) => {
-        //     const { tableId, orderId, updatedOrder } = action.payload;
-        //     const tableOrders = state.orders.find(orders => orders.tableId === tableId);
-        //     if (tableOrders) {
-        //         const orderIndex = tableOrders.orders.findIndex(order => order.orderId === orderId);
-        //         if (orderIndex >= 0) {
-        //             tableOrders.orders[orderIndex] = {
-        //                 ...tableOrders.orders[orderIndex],
-        //                 ...updatedOrder,
-        //             };
-        //         }
-        //     }
-        // }
+        
     },
     extraReducers: builder => {
         builder.addCase(fetchOrders.fulfilled, (state, action) => {
             state.orders = action.payload;
-            // console.log("this is ordrs payload",action.payload);
         });
-        // builder.addCase(updateOrder.fulfilled, (state, action) => {
-        //     state.orders = action.payload;
-        //     // console.log("this is ordrs payload",action.payload);
-        // });
     }
 });
 

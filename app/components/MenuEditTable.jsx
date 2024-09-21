@@ -1,15 +1,32 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { Table, Button, Form } from 'react-bootstrap';
 import { generateOptionId } from '../utils/generateOrderId';
 import { useDispatch } from 'react-redux';
 import { fetchMenu } from '../slices/menuSlice';
+import { useRouter } from 'next/navigation';
+
 
 const EditableTable = ({ data, menuId }) => {
   const dispatch = useDispatch();
+  const router = useRouter();
+
+  const [loginToken, setLoginToken] = useState();
 
   const [editableData, setEditableData] = useState(data);
   const [editingIndex, setEditingIndex] = useState(null);
   const [newItem, setNewItem] = useState({ id: '', name: '', price: '' });
+
+  useEffect(() => {
+    const token = localStorage.getItem('token'); // Retrieve the JWT token from local storage
+
+    if (!token) {
+      // Redirect to login if no token is found
+      router.push('/pages/createUser');
+      return;
+    } else {
+      setLoginToken(token);
+    }
+  }, [])
 
   const handleEditClick = useCallback((index) => {
     setEditingIndex(index);
@@ -22,9 +39,16 @@ const EditableTable = ({ data, menuId }) => {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${loginToken}`,
         },
         body: JSON.stringify({ updateOption: updatedOption }),
       });
+
+      if (response.status === 401 || response.status === 403) {
+        // Token is invalid or expired, redirect to login
+        router.push('/pages/createUser');
+        return;
+      }
 
       if (response.ok) {
         dispatch(fetchMenu());
@@ -35,7 +59,7 @@ const EditableTable = ({ data, menuId }) => {
     } catch (error) {
       console.error('Error saving option:', error);
     }
-  }, [editableData, dispatch, menuId]);
+  }, [editableData, dispatch, menuId,loginToken]);
 
   const handleInputChange = useCallback((e, index, key) => {
     const updatedItem = { ...editableData[index], [key]: e.target.value };
@@ -55,10 +79,16 @@ const EditableTable = ({ data, menuId }) => {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${loginToken}`,
         },
         body: JSON.stringify({ addOption: newOption }),
       });
 
+      if (response.status === 401 || response.status === 403) {
+        // Token is invalid or expired, redirect to login
+        router.push('/pages/createUser');
+        return;
+      }
       if (response.ok) {
         setEditableData((prevData) => [...prevData, newOption]);
         dispatch(fetchMenu());
@@ -69,7 +99,7 @@ const EditableTable = ({ data, menuId }) => {
     } catch (error) {
       console.error('Error adding option:', error);
     }
-  }, [newItem, menuId, dispatch]);
+  }, [newItem, menuId, dispatch,loginToken]);
 
   const handleDeleteClick = useCallback(async (index) => {
     const optionId = editableData[index].id;
@@ -78,10 +108,15 @@ const EditableTable = ({ data, menuId }) => {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${loginToken}`,
         },
         body: JSON.stringify({ deleteOptionId: optionId }),
       });
-
+      if (response.status === 401 || response.status === 403) {
+        // Token is invalid or expired, redirect to login
+        router.push('/pages/createUser');
+        return;
+      }
       if (response.ok) {
         setEditableData((prevData) => prevData.filter((_, i) => i !== index));
         dispatch(fetchMenu());
@@ -91,7 +126,7 @@ const EditableTable = ({ data, menuId }) => {
     } catch (error) {
       console.error('Error deleting option:', error);
     }
-  }, [editableData, menuId, dispatch]);
+  }, [editableData, menuId, dispatch,loginToken]);
 
   return (
     <Table striped bordered hover>

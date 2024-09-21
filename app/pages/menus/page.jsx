@@ -19,17 +19,30 @@ import {
     FormLabel
 } from 'react-bootstrap';
 import { generateMenuId } from '@/app/utils/generateOrderId';
+import { useRouter } from 'next/navigation';
 
 const Menus = () => {
     const dispatch = useDispatch();
+  const router = useRouter();
+
     const { menu } = useSelector((state) => state.menuReducer);
 
     const [show, setShow] = useState(false);
     const [catName, setCatName] = useState("");
     const [action, setAction] = useState("");
     const [categ, setCateg] = useState({});
+    const [loginToken,setLoginToken] = useState();
 
     useEffect(() => {
+        const token = localStorage.getItem('token'); // Retrieve the JWT token from local storage
+
+        if (!token) {
+            // Redirect to login if no token is found
+            router.push('/pages/createUser');
+            return;
+        }else{
+            setLoginToken(token);
+        }
         dispatch(fetchMenu());
     }, [dispatch]);
 
@@ -70,11 +83,18 @@ const Menus = () => {
             const response = await fetch(url, {
                 method,
                 headers: {
-                    'Content-Type': 'application/json'
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${loginToken}`,
                 },
                 body: method !== 'DELETE' ? JSON.stringify(payload) : null
             });
-
+            
+            if (response.status === 401 || response.status === 403) {
+                // Token is invalid or expired, redirect to login
+                router.push('/pages/createUser');
+                return;
+              }
+        
             if (response.status === 200) {
                 dispatch(fetchMenu());
                 setShow(false);

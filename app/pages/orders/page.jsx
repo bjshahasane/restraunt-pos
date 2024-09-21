@@ -6,14 +6,24 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchOrders } from '@/app/slices/ordersSlice';
 import { formatCurrency } from '@/app/utils/generateOrderId';
+import { useRouter } from 'next/navigation';
 
 const Orders = () => {
     const dispatch = useDispatch();
+    const router = useRouter();
+
     const { orders } = useSelector((state) => state.orderReducer);
 
     const [selectedOrder, setSelectedOrder] = useState(null);
 
     useEffect(() => {
+        const token = localStorage.getItem('token'); // Retrieve the JWT token from local storage
+
+        if (!token) {
+            // Redirect to login if no token is found
+            router.push('/pages/createUser');
+            return;
+        }
         dispatch(fetchOrders());
     }, [dispatch]);
 
@@ -43,7 +53,7 @@ const Orders = () => {
                                     <tr key={order.orderId} onClick={() => handleOrderClick(order)}>
                                         <td>Table-{order.tableId}</td>
                                         <td>{order.orderId}</td>
-                                        <td>{order.date}</td>
+                                        <td>{(order.date)?.split('T')[0]}</td>
                                         <td>{formatCurrency(order.total)}</td>
                                         <td>
                                             <div className={`border ${order.status === "Unpaid" ? "unpaid-yellow" : "paid-gray"} d-flex justify-content-center align-items-center p-1 rounded text-white`}>
@@ -56,12 +66,12 @@ const Orders = () => {
                         </table>
                     </div>
                     {selectedOrder && (
-                        <TableDetails 
-                            tableid={selectedOrder.tableId} 
-                            orderItems={selectedOrder.orders} 
-                            total={selectedOrder.total} 
-                            orderId={selectedOrder.orderId} 
-                            orderStatus={selectedOrder.status} 
+                        <TableDetails
+                            tableid={selectedOrder.tableId}
+                            orderItems={selectedOrder.orders}
+                            total={selectedOrder.total}
+                            orderId={selectedOrder.orderId}
+                            orderStatus={selectedOrder.status}
                         />
                     )}
                 </div>

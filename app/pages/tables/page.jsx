@@ -6,15 +6,25 @@ import Layout from '../../components/Layout';
 import { useDispatch, useSelector } from 'react-redux';
 import { selectTable, fetchOrders } from '../../slices/ordersSlice';
 import { fetchMenu } from '@/app/slices/menuSlice';
+import { useRouter } from 'next/navigation';
 
 const Tables = () => {
   const dispatch = useDispatch();
+  const router = useRouter();
+
   const store = useSelector((state) => state.orderReducer);
   const [ordersArr, setOrdersArr] = useState([]);
 
   const tableNumbers = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
 
   useEffect(() => {
+    const token = localStorage.getItem('token'); // Retrieve the JWT token from local storage
+
+    if (!token) {
+        // Redirect to login if no token is found
+        router.push('/pages/createUser');
+        return;
+    }
     dispatch(fetchMenu());
     dispatch(fetchOrders());
   }, [dispatch]);
