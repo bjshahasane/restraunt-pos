@@ -8,6 +8,7 @@ import { useEffect, useState, useMemo, use } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchOrders } from '@/app/slices/ordersSlice';
 import { fetchMenu } from '@/app/slices/menuSlice';
+import { hideLoader, showLoader } from '@/app/slices/siteSettingSlice';
 
 const MenuDetails = () => {
   const { slug } = useParams();
@@ -55,11 +56,13 @@ const MenuDetails = () => {
         updateOrderItems(order);
       }
     }
-  }, [menu, currentMenu, order, orderId, dispatch,updateOrderItems]);
+  }, [menu, currentMenu, order, orderId, dispatch]);
 
   const fetchOrderDetails = async (Oid) => {
+    dispatch(showLoader(true));
     try {
       const response = await dispatch(fetchOrders(Oid)).unwrap();
+      dispatch(hideLoader(true));
       const fetchedOrder = response[0];
       const tempOrders = fetchedOrder.orders.reduce((acc, item) => {
         acc[item.id] = item.quantity;
@@ -70,6 +73,7 @@ const MenuDetails = () => {
       setTotal(fetchedOrder.total);
       setOrderStatus(fetchedOrder.status);
     } catch (error) {
+      dispatch(hideLoader(true));
       console.error("Error occurred:", error.message);
     }
   };

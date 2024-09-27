@@ -4,6 +4,7 @@ import { generateOptionId } from '../utils/generateOrderId';
 import { useDispatch } from 'react-redux';
 import { fetchMenu } from '../slices/menuSlice';
 import { useRouter } from 'next/navigation';
+import { hideLoader, showLoader, showNotification } from '../slices/siteSettingSlice';
 
 
 const EditableTable = ({ data, menuId }) => {
@@ -33,6 +34,7 @@ const EditableTable = ({ data, menuId }) => {
   }, []);
 
   const handleSaveClick = useCallback(async (index) => {
+    dispatch(showLoader(true));
     const updatedOption = editableData[index];
     try {
       const response = await fetch(`/api/menu?id=${menuId}`, {
@@ -46,20 +48,24 @@ const EditableTable = ({ data, menuId }) => {
 
       if (response.status === 401 || response.status === 403) {
         // Token is invalid or expired, redirect to login
+        dispatch(hideLoader(true));
         router.push('/pages/createUser');
         return;
       }
 
       if (response.ok) {
         dispatch(fetchMenu());
+        dispatch(hideLoader(true));
         setEditingIndex(null);
       } else {
+        dispatch(hideLoader(true));
         console.error('Error saving updated option:', await response.json());
       }
     } catch (error) {
+      dispatch(hideLoader(true));
       console.error('Error saving option:', error);
     }
-  }, [editableData, dispatch, menuId,loginToken]);
+  }, [editableData, dispatch, menuId, loginToken]);
 
   const handleInputChange = useCallback((e, index, key) => {
     const updatedItem = { ...editableData[index], [key]: e.target.value };
@@ -73,6 +79,7 @@ const EditableTable = ({ data, menuId }) => {
   }, []);
 
   const handleAddNewItem = useCallback(async () => {
+    dispatch(showLoader(true));
     const newOption = { ...newItem, id: `${menuId}_${generateOptionId()}` };
     try {
       const response = await fetch(`/api/menu?id=${menuId}`, {
@@ -86,10 +93,12 @@ const EditableTable = ({ data, menuId }) => {
 
       if (response.status === 401 || response.status === 403) {
         // Token is invalid or expired, redirect to login
+        dispatch(hideLoader(true));
         router.push('/pages/createUser');
         return;
       }
       if (response.ok) {
+        dispatch(hideLoader(true));
         setEditableData((prevData) => [...prevData, newOption]);
         dispatch(fetchMenu());
         setNewItem({ name: '', price: '' });
@@ -97,11 +106,13 @@ const EditableTable = ({ data, menuId }) => {
         console.error('Error adding option:', await response.json());
       }
     } catch (error) {
+      dispatch(hideLoader(true));
       console.error('Error adding option:', error);
     }
-  }, [newItem, menuId, dispatch,loginToken]);
+  }, [newItem, menuId, dispatch, loginToken]);
 
   const handleDeleteClick = useCallback(async (index) => {
+    dispatch(showLoader(true));
     const optionId = editableData[index].id;
     try {
       const response = await fetch(`/api/menu?id=${menuId}`, {
@@ -113,20 +124,24 @@ const EditableTable = ({ data, menuId }) => {
         body: JSON.stringify({ deleteOptionId: optionId }),
       });
       if (response.status === 401 || response.status === 403) {
-        // Token is invalid or expired, redirect to login
+        dispatch(hideLoader(true));
         router.push('/pages/createUser');
         return;
       }
       if (response.ok) {
+        dispatch(hideLoader(true));
+
         setEditableData((prevData) => prevData.filter((_, i) => i !== index));
         dispatch(fetchMenu());
       } else {
         console.error('Error deleting option:', await response.json());
       }
     } catch (error) {
+      dispatch(hideLoader(true));
+      showNotification({ message: error, type: "error" });
       console.error('Error deleting option:', error);
     }
-  }, [editableData, menuId, dispatch,loginToken]);
+  }, [editableData, menuId, dispatch, loginToken]);
 
   return (
     <Table striped bordered hover>

@@ -3,19 +3,54 @@
 import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 import { Card, CardHeader, CardBody, Tab, Tabs } from "react-bootstrap";
-
+import Loader from "./Loader";
+import { hideLoader, showLoader } from "../slices/siteSettingSlice";
+import { useDispatch } from "react-redux";
 const UserForm = () => {
     const router = useRouter();
+    const dispatch = useDispatch();
+
     const [activeTab, setActiveTab] = useState('login');
-    const [formData, setFormData] = useState({ name: "", email: "", password: "", role: "" });
+    const [formData, setFormData] = useState({ name: "", email: "", password: "", role: "superadmin" });
     const [message, setMessage] = useState("");
+    const [canSignup, setCanSignup] = useState(false); 
 
     useEffect(() => {
         const token = localStorage.getItem('token');
         if (token) {
             router.push("/"); // Redirect to home if user is already logged in
         }
+        checkSuperAdmin();
+
     }, [router]);
+
+    const checkSuperAdmin = async () => {
+        dispatch(showLoader(true));
+        try {
+            const response = await fetch('/api/check-superadmin', {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+            });
+            const result = await response.json();
+            if (result.exists) {
+                dispatch(hideLoader(true));
+                setCanSignup(false); 
+                setActiveTab('login')// Disable signup if superadmin exists
+                console.log("this is super",result.exists);
+            } else {
+                dispatch(hideLoader(true));
+
+                setCanSignup(true); // Allow signup if superadmin doesn't exist
+                setActiveTab('signup');// Disable signup if superadmin exists
+            }
+        } catch (error) {
+            dispatch(hideLoader(true));
+
+            console.error('Error checking superadmin:', error);
+        }
+    };
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -24,10 +59,11 @@ const UserForm = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        dispatch(showLoader(true));
 
         const url = activeTab === 'signup' ? '/api/signup' : '/api/login';
         const body = activeTab === 'signup'
-            ? { formData }
+            ? formData
             : { email: formData.email, password: formData.password };
 
         try {
@@ -43,13 +79,21 @@ const UserForm = () => {
             setMessage(result.message);
 
             if (response.ok) {
+                dispatch(hideLoader(true));
+
                 setFormData({ name: '', email: '', password: '', role: '' });
                 if (activeTab === 'login') {
-                    localStorage.setItem('token', result.token); // Store JWT in localStorage
-                    router.push("/"); // Redirect on successful login
+                    console.log("This is result",result);
+                    localStorage.setItem('token', result.token);
+                    localStorage.setItem('role', result.user.role); 
+                    router.push("/"); 
+                }else{
+                    router.push("/");
                 }
             }
         } catch (error) {
+            dispatch(hideLoader(true));
+
             console.error('Error:', error);
             setMessage('An error occurred. Please try again later.');
         }
@@ -57,7 +101,9 @@ const UserForm = () => {
 
 
     return (
-        <div className="container mt-5">
+        <>
+     
+         <div className="container mt-5">
             <Card style={{ maxWidth: '500px', margin: '0 auto' }}>
                 <CardHeader>
                     <Tabs
@@ -66,7 +112,7 @@ const UserForm = () => {
                         className="mb-3"
                     >
                         <Tab eventKey="login" title="Login" />
-                        <Tab eventKey="signup" title="Signup" />
+                        {canSignup && <Tab eventKey="signup" title="Signup" />} 
                     </Tabs>
                 </CardHeader>
                 <CardBody>
@@ -95,6 +141,7 @@ const UserForm = () => {
                                         value={formData.role}
                                         onChange={handleChange}
                                         placeholder="Enter role"
+                                        disabled
                                     />
                                 </div>
                             </>
@@ -131,6 +178,8 @@ const UserForm = () => {
                 </CardBody>
             </Card>
         </div>
+        </>
+       
     );
 }
 

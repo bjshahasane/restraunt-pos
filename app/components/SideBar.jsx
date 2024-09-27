@@ -4,6 +4,8 @@ import 'bootstrap/dist/css/bootstrap.min.css'; // Ensure Bootstrap CSS is import
 
 const SideBar = () => {
     const [dropdownOpen, setDropdownOpen] = useState(false);
+    
+
 
     const toggleDropdown = useCallback(() => {
         setDropdownOpen(prevState => !prevState);
@@ -51,9 +53,8 @@ const SideBar = () => {
                     </a>
                     {dropdownOpen && (
                         <ul className="dropdown-menu">
-                            <li><a className="dropdown-item" href="#">Profile</a></li>
-                            <li><a className="dropdown-item" href="#">Settings</a></li>
-                            <li><a className="dropdown-item" href="#">Logout</a></li>
+                            <li><a className="dropdown-item" href="/pages/users">Users</a></li>
+                            <li><a className="dropdown-item" href="/pages/logout">Logout</a></li>
                         </ul>
                     )}
                 </div>

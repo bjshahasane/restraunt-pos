@@ -7,6 +7,7 @@ import Link from 'next/link';
 import { useDispatch } from 'react-redux';
 import { usePathname,useRouter } from 'next/navigation';
 import {toast } from 'react-toastify';
+import { hideLoader, showLoader } from '../slices/siteSettingSlice';
 
 const OrderTable = ({ orderItems }) => (
     <div className='mt-3' style={{ overflowY: 'scroll', maxHeight: '40vh', overflowX: 'hidden' }}>
@@ -67,6 +68,7 @@ const TableDetails = ({ tableid, orderItems = [], total, orderId, orderStatus })
 
   
     const addUpdateOrder = async () => {
+        dispatch(showLoader(true));
         const payload = {
             orderId: orderId || generateOrderId(),
             tableId: tableid,
@@ -92,18 +94,18 @@ const TableDetails = ({ tableid, orderItems = [], total, orderId, orderStatus })
             const data = await response.json();
             
             if (response.status === 401 || response.status === 403) {
-                // Token is invalid or expired, redirect to login
+                dispatch(hideLoader(true));
                 router.push('/pages/createUser');
                 return;
               }
 
             if (response.ok) {
-                toast.success(`${orderId ? 'Order updated' : 'Order added'} successfully`);
-               
+                dispatch(hideLoader(true));
                 console.log(`${orderId ? 'Order updated' : 'Order added'} successfully`);
                 if (orderId) dispatch(fetchOrders());
                 
             } else {
+                dispatch(hideLoader(true));
                 console.error('Error processing order:', data);
             }
         } catch (error) {

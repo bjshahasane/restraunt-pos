@@ -20,6 +20,7 @@ import {
 } from 'react-bootstrap';
 import { generateMenuId } from '@/app/utils/generateOrderId';
 import { useRouter } from 'next/navigation';
+import { hideLoader, showLoader } from '@/app/slices/siteSettingSlice';
 
 const Menus = () => {
     const dispatch = useDispatch();
@@ -56,6 +57,7 @@ const Menus = () => {
     }, []);
 
     const handleMenuItem = useCallback(async () => {
+        dispatch(showLoader(true));
         let method, url, payload = {};
 
         if (action === 'Add') {
@@ -91,15 +93,18 @@ const Menus = () => {
             
             if (response.status === 401 || response.status === 403) {
                 // Token is invalid or expired, redirect to login
+
                 router.push('/pages/createUser');
                 return;
               }
         
             if (response.status === 200) {
+                dispatch(hideLoader(true));
                 dispatch(fetchMenu());
                 setShow(false);
                 console.log(`${action} successful`);
             } else {
+                dispatch(hideLoader(true));
                 console.error(`Error ${action.toLowerCase()}ing category`, await response.json());
                 setShow(false);
             }

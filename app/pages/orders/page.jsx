@@ -33,6 +33,36 @@ const Orders = () => {
         setSelectedOrder(order);
     };
 
+    const handleDeleteOrder = async (orderId) => {
+        const token = localStorage.getItem('token'); // Retrieve JWT token
+
+        if (!token) {
+            router.push('/pages/createUser');
+            return;
+        }
+
+        try {
+            const response = await fetch(`/api/orders?orderId=${orderId}`, {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+
+            if (response.ok) {
+                dispatch(fetchOrders()); // Refresh the order list after deletion
+                alert('Order deleted successfully');
+            } else {
+                const errorData = await response.json();
+                alert(`Error: ${errorData.message}`);
+            }
+        } catch (error) {
+            console.error('Failed to delete order:', error);
+            alert('Failed to delete order');
+        }
+    };
+
     return (
         <Layout>
             <div className='container'>
@@ -46,19 +76,29 @@ const Orders = () => {
                                     <th scope="col">Date</th>
                                     <th scope="col">Total</th>
                                     <th scope="col">Status</th>
+                                    <th scope="col">Actions</th> {/* New Actions column */}
                                 </tr>
                             </thead>
                             <tbody>
                                 {ordersArr.map((order) => (
-                                    <tr key={order.orderId} onClick={() => handleOrderClick(order)}>
-                                        <td>Table-{order.tableId}</td>
-                                        <td>{order.orderId}</td>
-                                        <td>{(order.date)?.split('T')[0]}</td>
-                                        <td>{formatCurrency(order.total)}</td>
-                                        <td>
+                                    <tr key={order.orderId}>
+                                        <td onClick={() => handleOrderClick(order)}>Table-{order.tableId}</td>
+                                        <td onClick={() => handleOrderClick(order)}>{order.orderId}</td>
+                                        <td onClick={() => handleOrderClick(order)}>{(order.date)?.split('T')[0]}</td>
+                                        <td onClick={() => handleOrderClick(order)}>{formatCurrency(order.total)}</td>
+                                        <td onClick={() => handleOrderClick(order)}>
                                             <div className={`border ${order.status === "Unpaid" ? "unpaid-yellow" : "paid-gray"} d-flex justify-content-center align-items-center p-1 rounded text-white`}>
                                                 {order.status}
                                             </div>
+                                        </td>
+                                        <td>
+                                            {/* Delete button */}
+                                            <button 
+                                                className="btn btn-danger" 
+                                                onClick={() => handleDeleteOrder(order.orderId)}
+                                            >
+                                                Delete
+                                            </button>
                                         </td>
                                     </tr>
                                 ))}

@@ -1,11 +1,13 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import { v4 as uuidv4 } from 'uuid';
 import { generateOrderId } from '../utils/generateOrderId';
+import { hideLoader, showLoader, showNotification } from './siteSettingSlice';
 // import axios from 'axios';
 
 
-export const fetchMenu = createAsyncThunk('menu/fetchMenu', async (payload) => {
+export const fetchMenu = createAsyncThunk('menu/fetchMenu', async (payload,{dispatch}) => {
     //  const { orderId, tableId } = payload || {};
+    dispatch(showLoader(true));
     const token = localStorage.getItem('token');
     let fetchUrl = `/api/menu`;
 
@@ -27,12 +29,17 @@ export const fetchMenu = createAsyncThunk('menu/fetchMenu', async (payload) => {
           }
         if (response.status === 200) {
             // console.log('Orders retrieved successfully', data.orders);
+            dispatch(hideLoader(true));
             return data.menu;
         } else {
             console.log('Error retrieving orders', data);
+            dispatch(hideLoader(true));
+
         }
     } catch (error) {
         console.error('Error:', error);
+        dispatch(hideLoader(true));
+        showNotification({ message: `${error}`, type: "error" });
         return error;
     }
 

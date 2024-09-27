@@ -100,12 +100,13 @@ export async function DELETE(req) {
 
         // Extract order ID from query parameters
         const { searchParams } = new URL(req.url);
-        const orderId = searchParams.get('id');
+        const orderId = searchParams.get('orderId');
+        console.log("This is search",orderId);
 
         await connectMongoDB();
 
         // Find the order by ID and delete it
-        const deletedOrder = await Orders.findByIdAndDelete(orderId);
+        const deletedOrder = await Orders.findOneAndDelete(orderId);
 
         if (!deletedOrder) {
             return NextResponse.json({ message: 'Order not found' }, { status: 404 });
