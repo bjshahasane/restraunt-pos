@@ -5,11 +5,12 @@ import { formatCurrency, generateOrderId } from '../utils/generateOrderId';
 import { fetchOrders } from '../slices/ordersSlice';
 import Link from 'next/link';
 import { useDispatch } from 'react-redux';
-import { usePathname,useRouter } from 'next/navigation';
-import {toast } from 'react-toastify';
+import { usePathname, useRouter } from 'next/navigation';
+import { toast } from 'react-toastify';
 import { hideLoader, showLoader } from '../slices/siteSettingSlice';
+import OrderManagement from './OrderManagement';
 
-const OrderTable = ({ orderItems }) => (
+const OrderTable = ({ orderItems, handleQuantityChange }) => (
     <div className='mt-3' style={{ overflowY: 'scroll', maxHeight: '40vh', overflowX: 'hidden' }}>
         <table className="table bgWhite2">
             <thead>
@@ -23,7 +24,8 @@ const OrderTable = ({ orderItems }) => (
                 {orderItems.map((item) => (
                     <tr key={item.id}>
                         <th scope="row">{item.name}</th>
-                        <td>{item.quantity}</td>
+                        {/* <td>{item.quantity}</td> */}
+                        <td><OrderManagement option={item} handleQuantityChange={handleQuantityChange} initialQuantity={item.quantity} /></td>
                         <td>{formatCurrency(item.price * item.quantity)}</td>
                     </tr>
                 ))}
@@ -44,12 +46,11 @@ const OrderStatusSelect = ({ status, setStatus }) => (
     </select>
 );
 
-const TableDetails = ({ tableid, orderItems = [], total, orderId, orderStatus }) => {
-    const [loginToken,setLoginToken] = useState();
-    console.log("This is tableID",tableid);
+const TableDetails = ({ tableid, orderItems = [], total, orderId, orderStatus, handleQuantityChange }) => {
+    const [loginToken, setLoginToken] = useState();
     const dispatch = useDispatch();
     const pathname = usePathname();
-  const router = useRouter();
+    const router = useRouter();
 
     const [oStatus, setOStatus] = useState('Unpaid');
 
@@ -60,13 +61,13 @@ const TableDetails = ({ tableid, orderItems = [], total, orderId, orderStatus })
             // Redirect to login if no token is found
             router.push('/pages/createUser');
             return;
-        }else{
+        } else {
             setLoginToken(token);
         }
         if (orderStatus) setOStatus(orderStatus);
-    }, [orderStatus,router]);
+    }, [orderStatus, router]);
 
-  
+
     const addUpdateOrder = async () => {
         dispatch(showLoader(true));
         const payload = {
@@ -84,26 +85,26 @@ const TableDetails = ({ tableid, orderItems = [], total, orderId, orderStatus })
         try {
             const response = await fetch(url, {
                 method,
-                headers: { 
+                headers: {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${loginToken}`,
-                 },
+                },
                 body: JSON.stringify(payload),
             });
 
             const data = await response.json();
-            
+
             if (response.status === 401 || response.status === 403) {
                 dispatch(hideLoader(true));
                 router.push('/pages/createUser');
                 return;
-              }
+            }
 
             if (response.ok) {
                 dispatch(hideLoader(true));
                 console.log(`${orderId ? 'Order updated' : 'Order added'} successfully`);
                 if (orderId) dispatch(fetchOrders());
-                
+
             } else {
                 dispatch(hideLoader(true));
                 console.error('Error processing order:', data);
@@ -127,7 +128,7 @@ const TableDetails = ({ tableid, orderItems = [], total, orderId, orderStatus })
                     <h2 className='col'>Table {tableid}</h2>
                     {orderId && <h6 className='col align-content-center'>order #{orderId}</h6>}
                 </div>
-                <OrderTable orderItems={orderItems} />
+                <OrderTable orderItems={orderItems} handleQuantityChange={handleQuantityChange} />
             </div>
             <div>
                 <table className='table border-top bgWhite2'>
@@ -137,6 +138,7 @@ const TableDetails = ({ tableid, orderItems = [], total, orderId, orderStatus })
                             <th className='fs-4 align-content-center'>{formatCurrency(total)}</th>
                         </tr>
                         <tr>
+                            
                             <td className='border-0'>
                                 <OrderStatusSelect status={oStatus} setStatus={setOStatus} />
                             </td>

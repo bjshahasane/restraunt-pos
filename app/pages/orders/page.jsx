@@ -2,11 +2,24 @@
 
 import Layout from '@/app/components/Layout';
 import TableDetails from '@/app/components/TableDetails';
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo,useCallback } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchOrders } from '@/app/slices/ordersSlice';
 import { formatCurrency } from '@/app/utils/generateOrderId';
 import { useRouter } from 'next/navigation';
+import {
+    Accordion,
+    AccordionItem,
+    AccordionHeader,
+    AccordionBody,
+    Modal,
+    ModalTitle,
+    ModalHeader,
+    ModalFooter,
+    ModalBody,
+    FormControl,
+    FormLabel
+} from 'react-bootstrap';
 
 const Orders = () => {
     const dispatch = useDispatch();
@@ -15,6 +28,8 @@ const Orders = () => {
     const { orders } = useSelector((state) => state.orderReducer);
 
     const [selectedOrder, setSelectedOrder] = useState(null);
+    const [deleteOrder, setDeleteOrder] = useState(null);
+    const [show, setShow] = useState(false);
 
     useEffect(() => {
         const token = localStorage.getItem('token'); // Retrieve the JWT token from local storage
@@ -29,20 +44,26 @@ const Orders = () => {
 
     const ordersArr = useMemo(() => orders || [], [orders]);
 
+    const handleClose = useCallback(() => setShow(false), []);
+
     const handleOrderClick = (order) => {
         setSelectedOrder(order);
     };
 
-    const handleDeleteOrder = async (orderId) => {
+    const handleDeletePopUp = (orderNum)=>{
+        setShow(true);
+        setDeleteOrder(orderNum);
+    }
+    const handleDeleteOrder = async () => {
         const token = localStorage.getItem('token'); // Retrieve JWT token
 
         if (!token) {
             router.push('/pages/createUser');
             return;
         }
-
+        // console.log("This is orderId==>>>>", orderId);
         try {
-            const response = await fetch(`/api/orders?orderId=${orderId}`, {
+            const response = await fetch(`/api/orders?orderId=${deleteOrder}`, {
                 method: 'DELETE',
                 headers: {
                     'Content-Type': 'application/json',
@@ -52,13 +73,16 @@ const Orders = () => {
 
             if (response.ok) {
                 dispatch(fetchOrders()); // Refresh the order list after deletion
-                alert('Order deleted successfully');
+                // alert('Order deleted successfully');
+                handleClose();
             } else {
                 const errorData = await response.json();
-                alert(`Error: ${errorData.message}`);
+                // alert(`Error: ${errorData.message}`);
             }
         } catch (error) {
             console.error('Failed to delete order:', error);
+            handleClose();
+
             alert('Failed to delete order');
         }
     };
@@ -93,9 +117,9 @@ const Orders = () => {
                                         </td>
                                         <td>
                                             {/* Delete button */}
-                                            <button 
-                                                className="btn btn-danger" 
-                                                onClick={() => handleDeleteOrder(order.orderId)}
+                                            <button
+                                                className="btn btn-danger"
+                                                onClick={() => handleDeletePopUp(order.orderId)}
                                             >
                                                 Delete
                                             </button>
@@ -116,6 +140,24 @@ const Orders = () => {
                     )}
                 </div>
             </div>
+
+
+            <Modal show={show} onHide={handleClose} backdrop="static" keyboard={false}>
+                <ModalHeader closeButton>
+                    <ModalTitle>Delete Order</ModalTitle>
+                </ModalHeader>
+                <ModalBody>
+                    <p>Are you sure you want to delete the order?</p>
+                </ModalBody>
+                <ModalFooter>
+                    <button
+                        className="btn btn-danger"
+                        onClick={() => handleDeleteOrder()}
+                    >
+                        Delete
+                    </button>
+                </ModalFooter>
+            </Modal>
         </Layout>
     );
 };

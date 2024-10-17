@@ -28,7 +28,6 @@ const MenuDetails = () => {
   const tableId = slug?.[0];
   const orderId = slug?.[1];
 
-  console.log("This is tavle",tableId);
 
   // Fetch the menu and orders on component mount
   useEffect(() => {
@@ -146,7 +145,7 @@ const MenuDetails = () => {
               </div>
             </div>
           </div>
-          <TableDetails tableid={tableId} orderItems={orderItems} total={total} orderId={orderId} orderStatus={orderStatus} />
+          <TableDetails tableid={tableId} orderItems={orderItems} total={total} orderId={orderId} orderStatus={orderStatus} handleQuantityChange={handleQuantityChange}/>
         </div>
       </div>
     </Layout>

@@ -106,7 +106,7 @@ export async function DELETE(req) {
         await connectMongoDB();
 
         // Find the order by ID and delete it
-        const deletedOrder = await Orders.findOneAndDelete(orderId);
+        const deletedOrder = await Orders.findOneAndDelete({ orderId: orderId }); // Use an object to query by _id
 
         if (!deletedOrder) {
             return NextResponse.json({ message: 'Order not found' }, { status: 404 });
