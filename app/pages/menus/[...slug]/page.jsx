@@ -1,6 +1,6 @@
 'use client';
 
-import { useParams,useRouter } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import Layout from '@/app/components/Layout';
 import TableDetails from '@/app/components/TableDetails';
 import MenuInnerDetails from '@/app/components/MenuInnerDetails';
@@ -15,6 +15,7 @@ const MenuDetails = () => {
   const dispatch = useDispatch();
   const router = useRouter();
   const { menu } = useSelector((state) => state.menuReducer);
+  const { orders } = useSelector((state) => state.orderReducer);
 
   const [currentMenu, setCurrentMenu] = useState('VegStarters');
   const [order, setOrder] = useState({});
@@ -28,6 +29,7 @@ const MenuDetails = () => {
   const tableId = slug?.[0];
   const orderId = slug?.[1];
 
+  console.log("this is table oand order", tableId, orderId);
 
   // Fetch the menu and orders on component mount
   useEffect(() => {
@@ -42,9 +44,10 @@ const MenuDetails = () => {
     }
     dispatch(fetchMenu());
     if (orderId) {
-      fetchOrderDetails(orderId);
+      // fetchOrderDetails(orderId);
+      fetchOrders({ orderId, tableId })
     }
-  }, [orderId,dispatch,router]);
+  }, [orderId, dispatch, router, tableId]);
 
   // Update the filtered menu and fetch orders when the menu or currentMenu changes
   useEffect(() => {
@@ -55,14 +58,12 @@ const MenuDetails = () => {
         updateOrderItems(order);
       }
     }
-  }, [menu, currentMenu, order, orderId, dispatch]);
 
-  const fetchOrderDetails = async (Oid) => {
-    dispatch(showLoader(true));
-    try {
-      const response = await dispatch(fetchOrders(Oid)).unwrap();
-      dispatch(hideLoader(true));
-      const fetchedOrder = response[0];
+  }, [menu, currentMenu, orderId]);
+
+  useEffect(() => {
+    if (orders.orders) {
+      let fetchedOrder = orders.orders[0];
       const tempOrders = fetchedOrder.orders.reduce((acc, item) => {
         acc[item.id] = item.quantity;
         return acc;
@@ -71,12 +72,8 @@ const MenuDetails = () => {
       setOrderItems(fetchedOrder.orders);
       setTotal(fetchedOrder.total);
       setOrderStatus(fetchedOrder.status);
-    } catch (error) {
-      dispatch(hideLoader(true));
-      console.error("Error occurred:", error.message);
     }
-  };
-
+  }, [orders])
 
 
   const handleMenu = (categoryName) => {
@@ -145,7 +142,7 @@ const MenuDetails = () => {
               </div>
             </div>
           </div>
-          <TableDetails tableid={tableId} orderItems={orderItems} total={total} orderId={orderId} orderStatus={orderStatus} handleQuantityChange={handleQuantityChange}/>
+          <TableDetails tableid={tableId} orderItems={orderItems} total={total} orderId={orderId} orderStatus={orderStatus} handleQuantityChange={handleQuantityChange} />
         </div>
       </div>
     </Layout>

@@ -120,40 +120,69 @@ export async function DELETE(req) {
         return NextResponse.json({ message: 'Error deleting order', error }, { status: 500 });
     }
 }
-
 export async function GET(req) {
     try {
+        const decodedToken = verifyToken(req);
+        console.log("Token verified. User ID:", decodedToken.userId);
 
-        try {
-            const decodedToken = verifyToken(req); // If token is invalid, it will throw an error
-            console.log("Token verified. User ID:", decodedToken.userId);  // Example use of decoded token
-        } catch (error) {
-            return NextResponse.json({ message: 'Unauthorized', error: error.message }, { status: 401 });
-        }
-        
         await connectMongoDB();
 
-        // Extract query parameters
         const { searchParams } = new URL(req.url);
         const orderId = searchParams.get('orderId');
         const tableId = searchParams.get('tableId');
+        const page = parseInt(searchParams.get('page')) || 1; // default to page 1
+        const limit = parseInt(searchParams.get('limit')) || 10; // default limit for pagination
+        const sortOrder = searchParams.get('sortOrder') === 'asc' ? 1 : -1; // ascending or descending
+        const dateFilter = searchParams.get('dateFilter'); // New filter to get date-based sorting
 
         let query = {};
-
-        // If specific query parameters are provided, use them to filter the results
         if (orderId) query.orderId = orderId;
         if (tableId) query.tableId = tableId;
 
-        // Find orders based on the query parameters
-        // const orders = await Orders.find(query);
-        const orders = await Orders.find(query).sort({ createdAt: -1 });
+        // Calculate date ranges based on the selected filter
+        const today = new Date().toISOString().split('T')[0];
+        const yesterday = new Date(new Date().setDate(new Date().getDate() - 1)).toISOString().split('T')[0];
+        const startOfWeek = new Date(new Date().setDate(new Date().getDate() - new Date().getDay())).toISOString().split('T')[0];
+        const startOfPreviousWeek = new Date(new Date().setDate(new Date().getDate() - new Date().getDay() - 7)).toISOString().split('T')[0];
 
-        if (!orders.length) {
-            return NextResponse.json({ message: 'No orders found' }, { status: 404 });
+        // Apply date filtering based on `dateFilter`
+        if (dateFilter === 'today') {
+            query.date = {
+                $gte: new Date(`${today}T00:00:00.000Z`),
+                $lt: new Date(`${today}T23:59:59.999Z`)
+            };
+        } else if (dateFilter === 'yesterday') {
+            query.date = {
+                $gte: new Date(`${yesterday}T00:00:00.000Z`),
+                $lt: new Date(`${yesterday}T23:59:59.999Z`)
+            };
+        } else if (dateFilter === 'currentWeek') {
+            query.date = {
+                $gte: new Date(`${startOfWeek}T00:00:00.000Z`),
+                $lt: new Date(`${today}T23:59:59.999Z`)
+            };
+        } else if (dateFilter === 'previousWeek') {
+            query.date = {
+                $gte: new Date(`${startOfPreviousWeek}T00:00:00.000Z`),
+                $lt: new Date(`${startOfWeek}T00:00:00.000Z`)
+            };
         }
 
-        // console.log("Orders retrieved", orders);
-        return NextResponse.json({ orders }, { status: 200 });
+        const skip = (page - 1) * limit;
+
+        const orders = await Orders.find(query)
+            .sort({ date: sortOrder }) // sort by date
+            .skip(skip) // skip the previous pages
+            .limit(limit); // limit the results
+
+        const totalOrders = await Orders.countDocuments(query); // total number of orders for pagination
+
+        return NextResponse.json({
+            orders,
+            currentPage: page,
+            totalPages: Math.ceil(totalOrders / limit),
+            totalOrders
+        }, { status: 200 });
 
     } catch (error) {
         console.log(error);
