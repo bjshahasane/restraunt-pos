@@ -1,11 +1,22 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import Link from 'next/link';
 import 'bootstrap/dist/css/bootstrap.min.css'; // Ensure Bootstrap CSS is imported
 
 const SideBar = () => {
     const [dropdownOpen, setDropdownOpen] = useState(false);
-    
+    const [username, setUserName] = useState("");
+    const [userRole, setUserRole] = useState("");
 
+    useEffect(() => {
+        const name = localStorage.getItem('name');
+        const role = localStorage.getItem('role');
+        if (name) {
+            setUserName(name);
+        }
+        if (role) {
+            setUserRole(role);
+        }
+    }, [])
 
     const toggleDropdown = useCallback(() => {
         setDropdownOpen(prevState => !prevState);
@@ -49,11 +60,14 @@ const SideBar = () => {
                             <path d="M11 6a3 3 0 1 1-6 0 3 3 0 0 1 6 0" />
                             <path fillRule="evenodd" d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8m8-7a7 7 0 0 0-5.468 11.37C3.242 11.226 4.805 10 8 10s4.757 1.225 5.468 2.37A7 7 0 0 0 8 1" />
                         </svg>
-                        <span className="ms-1 d-none d-sm-inline">UserName</span>
+                        <span className="ms-1 d-none d-sm-inline">{username}</span>
                     </a>
                     {dropdownOpen && (
                         <ul className="dropdown-menu">
-                            <li><a className="dropdown-item" href="/pages/users">Users</a></li>
+                            {
+                                userRole !== "staff" && (
+                                    <li><a className="dropdown-item" href="/pages/users">Users</a></li>
+                                )}
                             <li><a className="dropdown-item" href="/pages/logout">Logout</a></li>
                         </ul>
                     )}

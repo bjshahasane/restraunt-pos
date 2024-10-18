@@ -86,6 +86,8 @@ const UserForm = () => {
                     console.log("This is result",result);
                     localStorage.setItem('token', result.token);
                     localStorage.setItem('role', result.user.role); 
+                    localStorage.setItem('name', result.user.name); 
+                    localStorage.setItem('email', result.user.email); 
                     router.push("/"); 
                 }else{
                     router.push("/");
