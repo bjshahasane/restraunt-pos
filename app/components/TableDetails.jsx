@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useEffect, useState, useMemo } from 'react';
+import React, { useEffect, useState, useMemo, useCallback } from 'react';
 import { formatCurrency, generateOrderId } from '../utils/generateOrderId';
 import { fetchOrders } from '../slices/ordersSlice';
 import Link from 'next/link';
@@ -11,7 +11,7 @@ import { hideLoader, showLoader } from '../slices/siteSettingSlice';
 import OrderManagement from './OrderManagement';
 
 const OrderTable = ({ orderItems, handleQuantityChange }) => (
-    <div className='mt-3' style={{ overflowY: 'scroll', maxHeight: '40vh', overflowX: 'hidden' }}>
+    <div className='mt-3 order-table' style={{ overflowY: 'scroll', maxHeight: '40vh', overflowX: 'hidden' }}>
         <table className="table bgWhite2">
             <thead>
                 <tr>
@@ -36,7 +36,7 @@ const OrderTable = ({ orderItems, handleQuantityChange }) => (
 
 const OrderStatusSelect = ({ status, setStatus }) => (
     <select
-        className="form-control dropdown edit-btn"
+        className="form-control form-control-sm dropdown edit-btn"
         value={status}
         onChange={(e) => setStatus(e.target.value)}
     >
@@ -46,13 +46,18 @@ const OrderStatusSelect = ({ status, setStatus }) => (
     </select>
 );
 
-const TableDetails = ({ tableid, orderItems = [], total, orderId, orderStatus, handleQuantityChange }) => {
+const TableDetails = ({ orderObj, handleQuantityChange }) => {
+    // console.log("This is orderObj",orderObj);
+    const { tableid, orderId, orderStatus, orderItems = [], total, discountType, discountValue } = orderObj
     const [loginToken, setLoginToken] = useState();
     const dispatch = useDispatch();
     const pathname = usePathname();
     const router = useRouter();
 
     const [oStatus, setOStatus] = useState('Unpaid');
+    const [dType, setDType] = useState('rs');
+    const [dValue, setDValue] = useState('0');
+
 
     useEffect(() => {
         const token = localStorage.getItem('token'); // Retrieve the JWT token from local storage
@@ -65,8 +70,26 @@ const TableDetails = ({ tableid, orderItems = [], total, orderId, orderStatus, h
             setLoginToken(token);
         }
         if (orderStatus) setOStatus(orderStatus);
-    }, [orderStatus, router]);
+        if (discountType) setDType(discountType);
+        if (discountValue) setDValue(String(discountValue));
 
+    }, [orderStatus, router, discountType, discountValue]);
+
+
+    // console.log("this is dvalue",dValue);
+
+
+    const calculateDiscountedTotal = () => {
+        let discountAmount = 0;
+        if (dType === 'percent') {
+            discountAmount = (dValue / 100) * total;  // Calculate percentage discount
+        } else if (dType === 'rs') {
+            discountAmount = dValue;  // Fixed discount in rupees
+        }
+        const discountedTotal = total - discountAmount;
+        // setDiscountTotal(discountedTotal < 0 ? 0 : discountedTotal);  // Calculate total after discount
+        return discountedTotal < 0 ? 0 : discountedTotal; // Prevent negative total
+    };
 
     const addUpdateOrder = async () => {
         dispatch(showLoader(true));
@@ -77,10 +100,13 @@ const TableDetails = ({ tableid, orderItems = [], total, orderId, orderStatus, h
             total,
             date: new Date().toISOString(),
             status: oStatus,
+            discountType: dType || 'rs',  // Capture discount type
+            discountValue: dValue || 0,   // Capture discount value
+            discountTotal: Number(calculateDiscountedTotal()),  // Capture discount total
         };
-
         const method = orderId ? 'PUT' : 'POST';
         const url = orderId ? `/api/orders/?orderId=${orderId}` : '/api/orders';
+        console.log("this is paload,url", payload, url);
 
         try {
             const response = await fetch(url, {
@@ -131,20 +157,50 @@ const TableDetails = ({ tableid, orderItems = [], total, orderId, orderStatus, h
                 <OrderTable orderItems={orderItems} handleQuantityChange={handleQuantityChange} />
             </div>
             <div>
+
                 <table className='table border-top bgWhite2'>
                     <thead>
                         <tr>
-                            <th className='fs-2'>Total</th>
-                            <th className='fs-4 align-content-center'>{formatCurrency(total)}</th>
+                            <th>
+                                <label htmlFor='dis-type'>Discount:</label>
+                                <select
+                                    id='dis-type'
+                                    value={dType}
+                                    onChange={(e) => setDType(e.target.value)}
+                                    className='form-control form-control-sm col-md-6'
+                                >
+                                    <option value="">Select</option>
+                                    <option value="rs">(₹)</option>
+                                    <option value="percent">(%)</option>
+                                </select>
+                            </th>
+                            <th>
+                                <input
+                                    id='dvalue'
+                                    type="text"
+                                    value={dValue}
+                                    onChange={(e) => setDValue(Number(e.target.value))}
+                                    placeholder="Enter discount value"
+                                    className='form-control form-control-sm col-md-6'
+                                />
+                            </th>
                         </tr>
                         <tr>
-                            
+                            <th className='fs-3'>Total</th>
+                            <th className='fs-5 align-content-center'>{formatCurrency(total)}</th>
+                        </tr>
+                        <tr>
+                            <th className='fs-8'>Discounted Total</th>
+                            <th className='fs-8 align-content-center'>{formatCurrency(calculateDiscountedTotal())}</th>
+                        </tr>
+                        <tr>
+
                             <td className='border-0'>
                                 <OrderStatusSelect status={oStatus} setStatus={setOStatus} />
                             </td>
                             <td className='border-0'>
                                 <Link href="/pages/orders" passHref>
-                                    <button type="button" className="btn mt-3 add-btn" onClick={addUpdateOrder}>
+                                    <button type="button" className="btn mt-3 add-btn form-control form-control-sm" onClick={addUpdateOrder}>
                                         {orderId ? 'Update Order' : 'Add order'}
                                     </button>
                                 </Link>

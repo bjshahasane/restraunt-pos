@@ -4,11 +4,10 @@ import { useParams, useRouter } from 'next/navigation';
 import Layout from '@/app/components/Layout';
 import TableDetails from '@/app/components/TableDetails';
 import MenuInnerDetails from '@/app/components/MenuInnerDetails';
-import { useEffect, useState, useMemo, use } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchOrders } from '@/app/slices/ordersSlice';
 import { fetchMenu } from '@/app/slices/menuSlice';
-import { hideLoader, showLoader } from '@/app/slices/siteSettingSlice';
 
 const MenuDetails = () => {
   const { slug } = useParams();
@@ -19,91 +18,92 @@ const MenuDetails = () => {
 
   const [currentMenu, setCurrentMenu] = useState('VegStarters');
   const [order, setOrder] = useState({});
-  const [orderItems, setOrderItems] = useState([]);
-  const [total, setTotal] = useState(0);
-  const [orderStatus, setOrderStatus] = useState('');
-  const [loginToken, setLoginToken] = useState();
-
-
+  const [loginToken, setLoginToken] = useState(null);
+  const [orderObj, setOrderObj] = useState({});
 
   const tableId = slug?.[0];
   const orderId = slug?.[1];
 
-  console.log("this is table oand order", tableId, orderId);
-
-  // Fetch the menu and orders on component mount
+  // Fetch menu and orders on component mount
   useEffect(() => {
     const token = localStorage.getItem('token'); // Retrieve the JWT token from local storage
-
     if (!token) {
-      // Redirect to login if no token is found
       router.push('/pages/createUser');
       return;
-    } else {
-      setLoginToken(token);
     }
+    setLoginToken(token);
+
     dispatch(fetchMenu());
     if (orderId) {
-      // fetchOrderDetails(orderId);
-      fetchOrders({ orderId, tableId })
+      dispatch(fetchOrders({ orderId, tableId }));
     }
-  }, [orderId, dispatch, router, tableId]);
+  }, [dispatch, orderId, tableId, router]);
 
-  // Update the filtered menu and fetch orders when the menu or currentMenu changes
+  // Update the order state when orders change
   useEffect(() => {
-    if (menu) {
-      const category = menu.find((cat) => cat.categoryName === currentMenu);
-      if (category) {
-        dispatch(fetchOrders({ orderId }));
-        updateOrderItems(order);
-      }
-    }
-
-  }, [menu, currentMenu, orderId]);
-
-  useEffect(() => {
-    if (orders.orders) {
-      let fetchedOrder = orders.orders[0];
+    if (orders?.orders?.[0]) {
+      const fetchedOrder = orders.orders[0];
       const tempOrders = fetchedOrder.orders.reduce((acc, item) => {
         acc[item.id] = item.quantity;
         return acc;
       }, {});
+
       setOrder(tempOrders);
-      setOrderItems(fetchedOrder.orders);
-      setTotal(fetchedOrder.total);
-      setOrderStatus(fetchedOrder.status);
+      setOrderObj({
+        ...fetchedOrder,
+        orderItems:fetchedOrder.orders,
+        tableId,
+        orderId,
+      });
     }
-  }, [orders])
+  }, [orders, tableId, orderId]);
 
+  // Update order items when menu or order changes
+  useEffect(() => {
+    if (menu) {
+      updateOrderItems();
+    }
+  }, [menu, currentMenu]);
 
+  // Memoize the current menu category options to avoid recalculating
+  const currentMenuOptions = useMemo(() => {
+    return menu?.find((cat) => cat.categoryName === currentMenu)?.options || [];
+  }, [menu, currentMenu]);
+
+  // Handle category switch
   const handleMenu = (categoryName) => {
     setCurrentMenu(categoryName);
   };
 
+  // Handle quantity changes for items
   const handleQuantityChange = (id, quantity) => {
-    const updatedOrder = {
-      ...order,
-      [id]: quantity,
-      tableId,
-    };
+    const updatedOrder = { ...order, [id]: quantity };
     setOrder(updatedOrder);
     updateOrderItems(updatedOrder);
   };
 
-  const updateOrderItems = (order) => {
-    const updatedItems = Object.keys(order)
+  // Update the order object with the latest order items and total
+  const updateOrderItems = (uOrder = order) => {
+    const updatedItems = Object.keys(uOrder)
       .map((id) => {
-        const category = menu?.find((cat) => cat.options.find((option) => option.id === id));
+        const category = menu?.find((cat) =>
+          cat.options.find((option) => option.id === id)
+        );
         const item = category?.options.find((option) => option.id === id);
-
-        return item && order[id] > 0 ? { ...item, quantity: order[id] } : null;
+        return item && uOrder[id] > 0 ? { ...item, quantity: uOrder[id] } : null;
       })
       .filter(Boolean);
 
-    setOrderItems(updatedItems);
+    const updatedTotal = updatedItems.reduce(
+      (sum, item) => sum + item.price * item.quantity,
+      0
+    );
 
-    const updatedTotal = updatedItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
-    setTotal(updatedTotal);
+    setOrderObj((prev) => ({
+      ...prev,
+      orderItems: updatedItems,
+      total: updatedTotal,
+    }));
   };
 
   return (
@@ -117,8 +117,11 @@ const MenuDetails = () => {
                   menu.map((item) => (
                     <div
                       key={item.id}
-                      className={`card col-md-2 m-2 menu-card ${currentMenu === item.categoryName ? 'selected' : 'border-0'
-                        }`}
+                      className={`card col-md-2 m-2 menu-card ${
+                        currentMenu === item.categoryName
+                          ? 'selected'
+                          : 'border-0'
+                      }`}
                       onClick={() => handleMenu(item.categoryName)}
                     >
                       <div className="card-body p-1">
@@ -129,20 +132,21 @@ const MenuDetails = () => {
               </div>
               <hr />
               <div className="row">
-                {menu
-                  ?.find((cat) => cat.categoryName === currentMenu)
-                  ?.options.map((option) => (
-                    <MenuInnerDetails
-                      key={option.id}
-                      option={option}
-                      handleQuantityChange={handleQuantityChange}
-                      initialQuantity={order[option.id] || 0}
-                    />
-                  ))}
+                {currentMenuOptions.map((option) => (
+                  <MenuInnerDetails
+                    key={option.id}
+                    option={option}
+                    handleQuantityChange={handleQuantityChange}
+                    initialQuantity={order[option.id] || 0}
+                  />
+                ))}
               </div>
             </div>
           </div>
-          <TableDetails tableid={tableId} orderItems={orderItems} total={total} orderId={orderId} orderStatus={orderStatus} handleQuantityChange={handleQuantityChange} />
+          <TableDetails
+            orderObj={orderObj}
+            handleQuantityChange={handleQuantityChange}
+          />
         </div>
       </div>
     </Layout>

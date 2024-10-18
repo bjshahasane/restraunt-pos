@@ -192,3 +192,23 @@
 .loader {
   z-index: 2;
 }
+
+
+.order-table::-webkit-scrollbar {
+  width: 10px;
+}
+
+.order-table::-webkit-scrollbar-track {
+  background:#f1f1f1; 
+}
+ 
+.order-table::-webkit-scrollbar-thumb {
+  background: var(--red1) !important ; 
+}
+
+/* .order-table::-webkit-scrollbar-thumb:hover {
+  background: var(--red1) !important; 
+} */
+.order-table::-webkit-scrollbar-button{
+  display: none;
+}

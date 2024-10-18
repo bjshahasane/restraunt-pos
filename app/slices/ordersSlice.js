@@ -91,7 +91,6 @@ export const orderSlice = createSlice({
     extraReducers: builder => {
         builder.addCase(fetchOrders.fulfilled, (state, action) => {
             state.orders = action.payload;
-            console.log("this i page==>>",action.payload.totalPages);
         });
     }
 });

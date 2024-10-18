@@ -47,7 +47,7 @@ export async function PUT(req) {
 
         // Parse the request body for updated order data
         const body = await req.json();
-
+        console.log("This is body",body);
         await connectMongoDB();
 
         const updateFields = {};
@@ -56,6 +56,8 @@ export async function PUT(req) {
             if (body.orders !== undefined) updateFields.orders = body.orders;
             if (body.date !== undefined) updateFields.date = body.date;
             if (body.status !== undefined) updateFields.status = body.status;
+            if (body.discountType !== undefined) updateFields.discountType = body.discountType;  // Capture discount type
+            if (body.discountValue !== undefined) updateFields.discountValue = body.discountValue;  // Capture discount value
         }
 
 
@@ -122,8 +124,12 @@ export async function DELETE(req) {
 }
 export async function GET(req) {
     try {
-        const decodedToken = verifyToken(req);
-        console.log("Token verified. User ID:", decodedToken.userId);
+        try {
+            const decodedToken = verifyToken(req); // If token is invalid, it will throw an error
+            console.log("Token verified. User ID:", decodedToken.userId);  // Example use of decoded token
+        } catch (error) {
+            return NextResponse.json({ message: 'Unauthorized', error: error.message }, { status: 401 });
+        }
 
         await connectMongoDB();
 
