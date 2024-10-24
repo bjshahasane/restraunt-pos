@@ -48,7 +48,9 @@ const OrderStatusSelect = ({ status, setStatus }) => (
 
 const TableDetails = ({ orderObj, handleQuantityChange }) => {
     // console.log("This is orderObj",orderObj);
-    const { tableid, orderId, orderStatus, orderItems = [], total, discountType, discountValue } = orderObj
+    const { tableid, orderId, orderStatus, orderItems = [], total, discountType, discountValue } = orderObj;
+    console.log("This is orderObj",orderItems);
+
     const [loginToken, setLoginToken] = useState();
     const dispatch = useDispatch();
     const pathname = usePathname();

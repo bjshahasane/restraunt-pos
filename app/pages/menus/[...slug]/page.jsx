@@ -41,7 +41,7 @@ const MenuDetails = () => {
 
   // Update the order state when orders change
   useEffect(() => {
-    if (orders?.orders?.[0]) {
+    if (orders?.orders?.[0] && orderId) {
       const fetchedOrder = orders.orders[0];
       const tempOrders = fetchedOrder.orders.reduce((acc, item) => {
         acc[item.id] = item.quantity;
@@ -106,6 +106,7 @@ const MenuDetails = () => {
     }));
   };
 
+  // console.log("This is orders OBJ in menu",orderObj);
   return (
     <Layout>
       <div className="container">
