@@ -8,6 +8,7 @@ import { fetchOrders } from '@/app/slices/ordersSlice';
 import { formatCurrency } from '@/app/utils/generateOrderId';
 import { useRouter } from 'next/navigation';
 import { Modal, ModalTitle, ModalHeader, ModalFooter, ModalBody } from 'react-bootstrap';
+import { showNotification } from '@/app/slices/siteSettingSlice';
 
 const Orders = () => {
     const dispatch = useDispatch();
@@ -79,15 +80,17 @@ const Orders = () => {
 
             if (response.ok) {
                 dispatch(fetchOrders({ currentPage, sortOrder, dateFilter }));
+                dispatch(showNotification(({message:`Order Deleted successfully`,type:"success"})));
+
                 handleClose();
             } else {
                 const errorData = await response.json();
                 console.error(`Error: ${errorData.message}`);
-                alert(`Error: ${errorData.message}`);
+                dispatch(showNotification(({message:`Error: ${errorData.message}`,type:"error"})));
             }
         } catch (error) {
             console.error('Failed to delete order:', error);
-            alert('Failed to delete order');
+            dispatch(showNotification(({message:`Error: Failed to delete order`,type:"error"})));
         }
     };
 

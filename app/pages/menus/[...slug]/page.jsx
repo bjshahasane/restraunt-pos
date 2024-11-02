@@ -52,7 +52,7 @@ const MenuDetails = () => {
       setOrderObj({
         ...fetchedOrder,
         orderItems:fetchedOrder.orders,
-        tableId,
+        tableid:tableId,
         orderId,
       });
     }
@@ -101,12 +101,13 @@ const MenuDetails = () => {
 
     setOrderObj((prev) => ({
       ...prev,
+      tableid:tableId,
       orderItems: updatedItems,
       total: updatedTotal,
     }));
   };
 
-  // console.log("This is orders OBJ in menu",orderObj);
+  console.log("This is orders OBJ in menu",orderObj);
   return (
     <Layout>
       <div className="container">

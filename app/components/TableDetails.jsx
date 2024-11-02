@@ -9,7 +9,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import { toast } from 'react-toastify';
 import { hideLoader, showLoader } from '../slices/siteSettingSlice';
 import OrderManagement from './OrderManagement';
-
+import { showNotification } from '../slices/siteSettingSlice';
 const OrderTable = ({ orderItems, handleQuantityChange }) => (
     <div className='mt-3 order-table' style={{ overflowY: 'scroll', maxHeight: '40vh', overflowX: 'hidden' }}>
         <table className="table bgWhite2">
@@ -47,9 +47,8 @@ const OrderStatusSelect = ({ status, setStatus }) => (
 );
 
 const TableDetails = ({ orderObj, handleQuantityChange }) => {
-    // console.log("This is orderObj",orderObj);
     const { tableid, orderId, orderStatus, orderItems = [], total, discountType, discountValue } = orderObj;
-    console.log("This is orderObj",orderItems);
+    console.log("This is tableid",tableid);
 
     const [loginToken, setLoginToken] = useState();
     const dispatch = useDispatch();
@@ -106,6 +105,8 @@ const TableDetails = ({ orderObj, handleQuantityChange }) => {
             discountValue: dValue || 0,   // Capture discount value
             discountTotal: Number(calculateDiscountedTotal()),  // Capture discount total
         };
+
+        console.log("This sis ===>>>",payload);
         const method = orderId ? 'PUT' : 'POST';
         const url = orderId ? `/api/orders/?orderId=${orderId}` : '/api/orders';
         console.log("this is paload,url", payload, url);
@@ -124,14 +125,31 @@ const TableDetails = ({ orderObj, handleQuantityChange }) => {
 
             if (response.status === 401 || response.status === 403) {
                 dispatch(hideLoader(true));
-                router.push('/pages/createUser');
+                dispatch(showNotification({ message: `Authorisation error`, type: "error" }));
+                setTimeout(()=>{
+                    router.push('/pages/createUser');
+
+                },(2000));
+
+                return;
+            }
+            if (response.status === 500 ) {
+                dispatch(hideLoader(true));
+                // router.push('/pages/createUser');
+                dispatch(showNotification({ message: `Error ${orderId ? ' updating' : 'adding'} order`, type: "error" }));
+
+
                 return;
             }
 
             if (response.ok) {
                 dispatch(hideLoader(true));
+                dispatch(showNotification({ message: `${orderId ? 'Order updated' : 'Order added'} successfully`, type: "success" }));
                 console.log(`${orderId ? 'Order updated' : 'Order added'} successfully`);
                 if (orderId) dispatch(fetchOrders());
+                setTimeout(()=>{
+                    router.push('/pages/orders');
+                },(2000));
 
             } else {
                 dispatch(hideLoader(true));
@@ -201,11 +219,11 @@ const TableDetails = ({ orderObj, handleQuantityChange }) => {
                                 <OrderStatusSelect status={oStatus} setStatus={setOStatus} />
                             </td>
                             <td className='border-0'>
-                                <Link href="/pages/orders" passHref>
+                                {/* <Link href="/pages/orders" passHref> */}
                                     <button type="button" className="btn mt-3 add-btn form-control form-control-sm" onClick={addUpdateOrder}>
                                         {orderId ? 'Update Order' : 'Add order'}
                                     </button>
-                                </Link>
+                                {/* </Link> */}
                             </td>
                         </tr>
                     </thead>

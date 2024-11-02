@@ -26,7 +26,7 @@ const Tables = () => {
       return;
     }
     dispatch(fetchMenu());
-    dispatch(fetchOrders({ isTableCheck: true }));
+    dispatch(fetchOrders({ isTableCheck: true,dateFilter: "today" }));
   }, [dispatch]);
 
   useEffect(() => {
