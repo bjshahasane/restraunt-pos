@@ -11,7 +11,7 @@ import { hideLoader, showLoader } from '../slices/siteSettingSlice';
 import OrderManagement from './OrderManagement';
 import { showNotification } from '../slices/siteSettingSlice';
 const OrderTable = ({ orderItems, handleQuantityChange }) => (
-    <div className='mt-3 order-table' style={{ overflowY: 'scroll', maxHeight: '40vh', overflowX: 'hidden' }}>
+    <div className='mt-3 order-table' style={{ overflowY: 'scroll', maxHeight: '38vh', overflowX: 'hidden' }}>
         <table className="table bgWhite2">
             <thead>
                 <tr>
@@ -166,7 +166,7 @@ const TableDetails = ({ orderObj, handleQuantityChange }) => {
                 {pathname.includes('orders') && (
                     <div className='d-flex justify-content-end'>
                         <Link href={`/pages/menus/${tableid}/${orderId}`} passHref>
-                            <button type="button" className="btn edit-btn m-3">Edit order</button>
+                            <button type="button" className="btn btn-sm edit-btn">Edit order</button>
                         </Link>
                     </div>
                 )}
