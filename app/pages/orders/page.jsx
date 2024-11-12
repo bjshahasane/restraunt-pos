@@ -136,8 +136,9 @@ const Orders = () => {
                                     <th scope="col">Order</th>
                                     <th scope="col">Table</th>
                                     <th scope="col">Date</th>
-                                    <th scope="col">Time</th>
+                                    {/* <th scope="col">Time</th> */}
                                     <th scope="col">Total</th>
+                                    <th scope="col">Discounted Total</th>
                                     <th scope="col">Status</th>
                                     <th scope="col">Actions</th>
                                 </tr>
@@ -148,8 +149,9 @@ const Orders = () => {
                                         <td>#{order.orderId}</td>
                                         <td><b>{order.tableId}</b></td>
                                         <td>{(order.date)?.split('T')[0]}</td>
-                                        <td>{(order.date)?.split('T')[1]}</td>
+                                        {/* <td>{(order.date)?.split('T')[1]}</td> */}
                                         <td>{formatCurrency(order.total)}</td>
+                                        <td>{formatCurrency(order.discountTotal)}</td>
                                         <td>
                                             <div
                                                 className={`border ${order.status === 'Unpaid' ? 'unpaid-yellow' : 'paid-gray'} 

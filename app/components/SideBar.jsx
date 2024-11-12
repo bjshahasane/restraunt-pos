@@ -18,9 +18,9 @@ const SideBar = () => {
         }
     }, [])
 
-    const toggleDropdown = useCallback(() => {
-        setDropdownOpen(prevState => !prevState);
-    }, []);
+    const toggleDropdown = () => {
+        setDropdownOpen(!dropdownOpen);
+    };
 
     return (
         <div className="col-auto px-sm-2 px-0 bgGray2">
@@ -62,15 +62,14 @@ const SideBar = () => {
                         </svg>
                         <span className="ms-1 d-none d-sm-inline">{username}</span>
                     </a>
-                    {dropdownOpen && (
-                        <ul className="dropdown-menu">
-                            {
-                                userRole !== "staff" && (
-                                    <li><a className="dropdown-item" href="/pages/users">Users</a></li>
-                                )}
-                            <li><a className="dropdown-item" href="/pages/logout">Logout</a></li>
-                        </ul>
-                    )}
+                    <ul className="dropdown-menu" style={{ display: dropdownOpen ? 'block' : 'none' }}>
+                        {
+                            userRole !== "staff" && (
+                                <li><a className="dropdown-item" href="/pages/users">Users</a></li>
+                            )
+                        }
+                        <li><a className="dropdown-item" href="/pages/logout">Logout</a></li>
+                    </ul>
                 </div>
             </div>
         </div>
