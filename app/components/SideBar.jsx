@@ -19,8 +19,7 @@ const SideBar = () => {
     }, [])
 
     const toggleDropdown = (e) => {
-        e.preventDefault();
-        setDropdownOpen(prevState => !prevState);
+        setDropdownOpen(!dropdownOpen);
     };
 
     return (
@@ -56,22 +55,22 @@ const SideBar = () => {
                     </li>
                 </ul>
                 <div className="dropdown mt-auto mb-3">
-                    <a className="nav-link dropdown-toggle px-0 align-middle" href="#" id="dropdownMenuButton" onClick={(e)=>toggleDropdown(e)}>
+                    <a className="nav-link dropdown-toggle px-0 align-middle" href="#" id="dropdownMenuButton" onClick={toggleDropdown}>
                         <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" fill="currentColor" className="bi bi-person-circle" viewBox="0 0 16 16">
                             <path d="M11 6a3 3 0 1 1-6 0 3 3 0 0 1 6 0" />
                             <path fillRule="evenodd" d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8m8-7a7 7 0 0 0-5.468 11.37C3.242 11.226 4.805 10 8 10s4.757 1.225 5.468 2.37A7 7 0 0 0 8 1" />
                         </svg>
                         <span className="ms-1 d-none d-sm-inline">{username}</span>
                     </a>
-                    {dropdownOpen && (
-                        <ul className="dropdown-menu">
-                            {
-                                userRole !== "staff" && (
-                                    <li><a className="dropdown-item" href="/pages/users">Users</a></li>
-                                )}
-                            <li><a className="dropdown-item" href="/pages/logout">Logout</a></li>
-                        </ul>
-                    )}
+                    <ul className="dropdown-menu" style={{ display: dropdownOpen ? 'block' : 'none' }}>
+                        {
+                            userRole !== "staff" && (
+                                <li><a className="dropdown-item" href="/pages/users">Users</a></li>
+                            )
+                        }
+                        <li><a className="dropdown-item" href="/pages/logout">Logout</a></li>
+                    </ul>
+
                 </div>
             </div>
         </div>
