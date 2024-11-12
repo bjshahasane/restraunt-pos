@@ -18,9 +18,9 @@ const SideBar = () => {
         }
     }, [])
 
-    const toggleDropdown = useCallback(() => {
+    const toggleDropdown = () => {
         setDropdownOpen(prevState => !prevState);
-    }, []);
+    };
 
     return (
         <div className="col-auto px-sm-2 px-0 bgGray2">
