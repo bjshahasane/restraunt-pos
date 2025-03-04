@@ -48,6 +48,22 @@ const OrdersSchema = new Schema(
             type: Date,  // Use Date type for better date handling
             required: true,
         },
+        discountType: {  // Updated to "percent" or "rs"
+            type: String,
+            enum: ['percent', 'rs'], // Change enum options here
+            default: 'rs', // Default can be "rs"
+            required: false
+        },
+        discountValue: {  // Keep the same for discount value
+            type: Number,
+            default: 0,
+            required: false,
+        },
+        discountTotal: {  // Keep the same for discount value
+            type: Number,
+            default: 0,
+            required: false,
+        },
     },
     {
         timestamps: true,  // Automatically manage createdAt and updatedAt properties

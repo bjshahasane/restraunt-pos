@@ -1,130 +1,65 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import { v4 as uuidv4 } from 'uuid';
 import { generateOrderId } from '../utils/generateOrderId';
+import { hideLoader, showLoader, showNotification } from './siteSettingSlice';
 // import axios from 'axios';
 
 
-export const fetchMenu = createAsyncThunk('menu/fetchMenu', async (payload) => {
+export const fetchMenu = createAsyncThunk('menu/fetchMenu', async (payload,{dispatch}) => {
     //  const { orderId, tableId } = payload || {};
-
+    dispatch(showLoader(true));
+    const token = localStorage.getItem('token');
     let fetchUrl = `/api/menu`;
-    // if (orderId || tableId) {
-    //     fetchUrl += `?${orderId ? `orderId=${orderId}` : ''}${orderId && tableId ? '&' : ''}${tableId ? `tableId=${tableId}` : ''}`;
-    // }
-    console.log("this is url", fetchUrl);
+
     try {
         const response = await fetch(fetchUrl, {
             method: 'GET',
             headers: {
-                'Content-Type': 'application/json'
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`,
             }
         });
 
         const data = await response.json();
         // console.log("This is data",data);
-
+        if (response.status === 401 || response.status === 403) {
+            // Token is invalid or expired
+            localStorage.removeItem('token'); // Optionally, clear the token
+            window.location.href = '/pages/createUser';  // Redirect to login
+          }
         if (response.status === 200) {
             // console.log('Orders retrieved successfully', data.orders);
+            dispatch(hideLoader(true));
             return data.menu;
         } else {
             console.log('Error retrieving orders', data);
+            dispatch(hideLoader(true));
+
         }
     } catch (error) {
         console.error('Error:', error);
+        dispatch(hideLoader(true));
+        showNotification({ message: `${error}`, type: "error" });
         return error;
     }
 
 });
 
-// export const updateOrder = createAsyncThunk('orders/updateOrder', async (payload) => {
-//     const { orderId, tableId } = payload || {};
-
-//    let fetchUrl = `/api/orders`;
-//    if (orderId || tableId) {
-//        fetchUrl += `?${orderId ? `orderId=${orderId}` : ''}${orderId && tableId ? '&' : ''}${tableId ? `tableId=${tableId}` : ''}`;
-//    }
-//    console.log("this is url", fetchUrl);
-//    try {
-//        const response = await fetch(fetchUrl, {
-//            method: 'GET',
-//            headers: {
-//                'Content-Type': 'application/json'
-//            }
-//        });
-
-//        const data = await response.json();
-//        // console.log("This is data",data);
-
-//        if (response.status === 200) {
-//            // console.log('Orders retrieved successfully', data.orders);
-//            return data.orders;
-//        } else {
-//            console.log('Error retrieving orders', data);
-//        }
-//    } catch (error) {
-//        console.error('Error:', error);
-//        return error;
-//    }
-
-// });
 
 
 const initialValue = {
-    menu:[]
+    menu: []
 };
 
 export const menuSlice = createSlice({
     name: 'menu',
     initialState: initialValue,
     reducers: {
-        // handleSearchVal: (state, action) => {
-        //     state.searchVal = action.payload;
-        // }
-        // selectTable:(state,action)=>{
-        //     state.tableId = action.payload;
-        // },
-        // addOrder: (state, action) => {
-        //     const { tableId, order,total } = action.payload;
-        //     // const tableOrders = state.orders.find(orders => orders.tableId === tableId);
-        //     // if (tableOrders) {
-        //     //     tableOrders.orders.push(order);
-        //     // } else {
-        //         const orderId = generateOrderId(); 
-        //         state.orders.push({ 
-        //             orderId,
-        //             tableId, 
-        //             orders: order,
-        //             total,
-        //             status:"Unpaid",
-        //             date:new Date().toISOString() 
-        //         });
-        //     // }
-        // },
-        // setOrders: (state, action) => {
-        //     state.orders = action.payload;
-        // },
-        // updateOrder: (state, action) => {
-        //     const { tableId, orderId, updatedOrder } = action.payload;
-        //     const tableOrders = state.orders.find(orders => orders.tableId === tableId);
-        //     if (tableOrders) {
-        //         const orderIndex = tableOrders.orders.findIndex(order => order.orderId === orderId);
-        //         if (orderIndex >= 0) {
-        //             tableOrders.orders[orderIndex] = {
-        //                 ...tableOrders.orders[orderIndex],
-        //                 ...updatedOrder,
-        //             };
-        //         }
-        //     }
-        // }
     },
     extraReducers: builder => {
         builder.addCase(fetchMenu.fulfilled, (state, action) => {
             state.menu = action.payload;
         });
-        // builder.addCase(updateOrder.fulfilled, (state, action) => {
-        //     state.orders = action.payload;
-        //     // console.log("this is ordrs payload",action.payload);
-        // });
     }
 });
 

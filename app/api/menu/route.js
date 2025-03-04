@@ -1,13 +1,21 @@
 import Menu from "@/app/models/menu";
 import { NextResponse } from "next/server";
 import connectMongoDB from "@/app/libs/mongodb";
-
+import { verifyToken } from "@/app/libs/Authorization";
 
 export async function GET(req) {
     try {
+
+        try {
+            const decodedToken = verifyToken(req); // If token is invalid, it will throw an error
+            console.log("Token verified. User ID:", decodedToken.userId);  // Example use of decoded token
+        } catch (error) {
+            return NextResponse.json({ message: 'Unauthorized', error: error.message }, { status: 401 });
+        }
+
         await connectMongoDB();
 
-
+       
         // Find orders based on the query parameters
         const menu = await Menu.find();
 
@@ -26,10 +34,19 @@ export async function GET(req) {
 
 export async function POST(req) {
     try {
+
+        try {
+            const decodedToken = verifyToken(req); // If token is invalid, it will throw an error
+            console.log("Token verified. User ID:", decodedToken.userId);  // Example use of decoded token
+        } catch (error) {
+            return NextResponse.json({ message: 'Unauthorized', error: error.message }, { status: 401 });
+        }
+        
         const body = await req.json();
 
         await connectMongoDB();
 
+       
 
         await Menu.create(body);
         console.log("This is formData", body);
@@ -45,12 +62,22 @@ export async function POST(req) {
 
 export async function PUT(req) {
     try {
+
+        try {
+            const decodedToken = verifyToken(req); // If token is invalid, it will throw an error
+            console.log("Token verified. User ID:", decodedToken.userId);  // Example use of decoded token
+        } catch (error) {
+            return NextResponse.json({ message: 'Unauthorized', error: error.message }, { status: 401 });
+        }
+
         const { searchParams } = new URL(req.url);
         const menuId = searchParams.get('id');
 
         const body = await req.json();
 
         await connectMongoDB();
+
+      
 
         let updateFields = {};
 
@@ -123,10 +150,25 @@ export async function PUT(req) {
 
 export async function DELETE(req) {
     try {
+
+        try {
+            const decodedToken = verifyToken(req); // If token is invalid, it will throw an error
+            console.log("Token verified. User ID:", decodedToken.userId);  // Example use of decoded token
+        } catch (error) {
+            return NextResponse.json({ message: 'Unauthorized', error: error.message }, { status: 401 });
+        }
+        
         const { searchParams } = new URL(req.url);
         const menuId = searchParams.get('id');
 
         await connectMongoDB();
+
+        try {
+            const decodedToken = verifyToken(req); // If token is invalid, it will throw an error
+            console.log("Token verified. User ID:", decodedToken.userId);  // Example use of decoded token
+        } catch (error) {
+            return NextResponse.json({ message: 'Unauthorized', error: error.message }, { status: 401 });
+        }
 
         const deletedMenu = await Menu.findOneAndDelete({ id: menuId });
 
