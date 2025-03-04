@@ -146,16 +146,9 @@ const Orders = () => {
                             <tbody>
                                 {ordersArr.map((order) => (
                                     <tr key={order.orderId} onClick={() => handleOrderClick(order)}>
-<<<<<<< HEAD
                                         <td>Table-{order.tableId}</td>
                                         <td>{order.orderId}</td>
-                                        <td>{(order.date).split('T')[0]}</td>
-=======
-                                        <td>#{order.orderId}</td>
-                                        <td><b>{order.tableId}</b></td>
-                                        <td>{(order.date)?.split('T')[0]}</td>
-                                        {/* <td>{(order.date)?.split('T')[1]}</td> */}
->>>>>>> 199d8fcb7dedf7f5b7c4b4293c41450e8a4c85ef
+                                        <td>{order.date}</td>
                                         <td>{formatCurrency(order.total)}</td>
                                         <td>{formatCurrency(order.discountTotal)}</td>
                                         <td>
