@@ -130,7 +130,7 @@ const Orders = () => {
                             </div>
                         </div>
 
-                        <table className="table" style={{ height: 'fit-content' }}>
+                        <table className="table mt-1" style={{ height: 'fit-content' }}>
                             <thead>
                                 <tr>
                                     <th scope="col">Order</th>
