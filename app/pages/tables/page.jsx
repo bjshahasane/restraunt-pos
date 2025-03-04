@@ -41,8 +41,8 @@ const Tables = () => {
               //   Table {item}
               // </div>
 
-              <div key={index} className="card col-sm-5 col-md-2 m-2 table-card border-0">
-                <Link href={`/pages/menus/${item}`} onClick={() => dispatch(selectTable(item))} className={isTableUnpaid(String(item)) ? 'disabled-link' : ''}>
+              <div key={index} className={`card col-sm-5 col-md-2 m-2 table-card border-0 ${isTableUnpaid(String(item)) ? 'disabled-link' : ''}`}>
+                <Link href={`/pages/menus/${item}`} onClick={() => dispatch(selectTable(item))}>
                   <div className="card-body">
                     <h5 className="card-title">Table {item}</h5>
                     {/* <h6 className="card-subtitle mb-2 text-muted">Card subtitle</h6>

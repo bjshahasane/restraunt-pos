@@ -51,7 +51,7 @@ const Orders = () => {
                                     <tr key={order.orderId} onClick={() => handleOrderClick(order)}>
                                         <td>Table-{order.tableId}</td>
                                         <td>{order.orderId}</td>
-                                        <td>{order.date}</td>
+                                        <td>{(order.date).split('T')[0]}</td>
                                         <td>{formatCurrency(order.total)}</td>
                                         <td>
                                             <div className={`border ${order.status == "Unpaid" ? "unpaid-yellow" :  "paid-gray"} d-flex justify-content-center align-items-center p-1 rounded text-white`}>
